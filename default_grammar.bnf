@@ -1,0 +1,23 @@
+# Root Language
+statement_list 			::= statement*
+statement 				::=	expression
+							| assignment_statement
+							
+assignment_statement	::= ID ASG_OPR (expression)
+
+# Mathematical Expressions
+expression 				::= logical_term (LOGICAL logical_term)*
+logical_term			::= comparison_term (COMPARISON comparison_term)*
+comparison_term			::= term (("+" | "-") term)*
+term 					::= exponential_term (("*" | "/" | "%") exponential_term)*
+exponential_term 		::= factor ("^" factor)*
+factor 					::= UNARY* ("(" expression ")" | ID | LIT)
+# Predefined
+ASG_OPR 				::= "=" | "+=" | "-=" | "*=" | "/="				
+UNARY 					::= "!" | "-" | "new"
+COMPARISON 				::= "==" | ">=" | "" | "<=" | "" | "!="
+LOGICAL 				::= "&&" | "||"
+LIT  					::= STR | NUM
+ID 						::= [@A-Za-z_]+
+NUM 					::= [0-9]+
+STR						::= "\"" . "\""
