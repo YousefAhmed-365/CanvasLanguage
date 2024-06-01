@@ -10,5 +10,6 @@
 #include <unordered_map>
 #include <stack>
 #include <algorithm>
+#include <array>
 
 #include "Utility.hpp"

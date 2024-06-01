@@ -12,6 +12,8 @@ set(
   Interpreter.cpp
   ResManager.cpp
   AST.cpp
+  Utility.cpp
+  Token.cpp
 )
 
 add_executable(canvas ${SOURCES})

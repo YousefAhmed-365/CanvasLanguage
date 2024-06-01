@@ -62,7 +62,7 @@ void ScopeManager::debug_outTree() {
         current = current->getParent();
     }
 
-    std::cout << "Scope Tree:\n";
+    std::cout << "Scope Tree\n->\n";
     int depth = 0;
     while (!scopeStack.empty()) {
         current = scopeStack.top();
