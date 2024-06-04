@@ -7,6 +7,7 @@ enum class NodeType{
     NONE,
 
     BIN_EXP,
+    UNR_EXP,
 
     LIT,
     NUM_LIT,
@@ -43,7 +44,15 @@ class AbstractNode{
         std::vector<std::shared_ptr<AbstractNode>> &getChildrens();
         std::shared_ptr<AbstractNode> getChild(const unsigned int index) const;
         std::string getValue();
+        void setValue(std::string value);
         void out(int defaultIndent);
+};
+
+struct AbstractList : public AbstractNode{
+    AbstractList();
+    ~AbstractList() = default;
+
+    NodeInfo eval() override;
 };
 
 struct BinaryExpression : public AbstractNode{
@@ -55,11 +64,27 @@ struct BinaryExpression : public AbstractNode{
     NodeInfo eval() override;
 };
 
+struct UnaryExpression : public AbstractNode{
+    OperatorType type;
+
+    UnaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left);
+    ~UnaryExpression() = default;
+
+    NodeInfo eval() override;
+};
+
 struct Literal : public AbstractNode{
     Data value;
 
     Literal(Data &value);
     ~Literal() = default;
+
+    NodeInfo eval() override;
+};
+
+struct IfStatement : public AbstractNode{
+    IfStatement(std::shared_ptr<AbstractNode> condition);
+    ~IfStatement() = default;
 
     NodeInfo eval() override;
 };

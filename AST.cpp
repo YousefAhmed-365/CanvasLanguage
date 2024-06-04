@@ -28,6 +28,9 @@ std::shared_ptr<AbstractNode> AbstractNode::getChild(const unsigned int index) c
 std::string AbstractNode::getValue(){
     return m_value;
 }
+void AbstractNode::setValue(std::string value){
+    m_value = value;
+}
 void AbstractNode::out(int indent){
     for (int i = 0; i < indent; ++i) {
         std::cout << "  ";
@@ -38,6 +41,25 @@ void AbstractNode::out(int indent){
     for (const auto &child : m_childrens) {
         child->out(indent + 1);
     }
+}
+
+/* AbstractList Struct */
+AbstractList::AbstractList(){
+    this->m_value = "[]";
+}
+
+NodeInfo AbstractList::eval(){
+    return this->info;
+}
+
+/* IfStatement Struct */
+IfStatement::IfStatement(std::shared_ptr<AbstractNode> condition){
+    this->m_value = "_IF";
+    attach(condition);
+}
+
+NodeInfo IfStatement::eval(){
+    return this->info;
 }
 
 /* BinaryExpression Struct */
@@ -94,8 +116,23 @@ NodeInfo BinaryExpression::eval(){
     return this->info;
 }
 
+/* UnaryExpression Struct */
+UnaryExpression::UnaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left){
+    this->m_value = oprStr;
+    this->info.type = NodeType::UNR_EXP;
+
+    attach(left);
+}
+
+NodeInfo UnaryExpression::eval(){
+    NodeInfo leftNode = m_childrens[0]->eval();
+
+    return this->info;
+}
+
 /* Literal Struct */
 Literal::Literal(Data &value){
+    this->m_value = std::get<std::string>(value);
     this->value = value;
     
     this->info.type = std::holds_alternative<int32_t>(value) || std::holds_alternative<float>(value)? NodeType::NUM_LIT : NodeType::STR_LIT;

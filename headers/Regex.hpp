@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "ctre/ctre.hpp"
+
 class Regex{
     private:
         //Variables
@@ -19,5 +21,7 @@ class Regex{
         static bool match(const std::string str, std::string pattern);
         std::vector<std::string> matchAll(const std::string str) const;
 };
+
+std::vector<std::string> PreRegex(const std::string str);
 
 #endif

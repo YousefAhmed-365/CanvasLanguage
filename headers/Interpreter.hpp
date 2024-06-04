@@ -12,12 +12,17 @@ class TreeParser{
         // Variables
         std::vector<Token> *m_tokens;
         std::uint32_t m_currTokenIndex;
+        std::string m_currTokenStr;
         Token *m_currToken;
 
         // Functions
         bool isEnd();
+        bool check(TokenType type);
+        bool check(std::string value);
+        bool check(TokenType type, std::string value);
         Token *nextToken();
-        void consume(std::string tokenStr);
+        void consume(TokenType type);
+        void consume(std::string value);
     public:
         // Variables
         // Constructor & Destructor
@@ -28,6 +33,15 @@ class TreeParser{
         std::shared_ptr<AbstractNode> parse(std::vector<Token> &tokenList);
 
         std::shared_ptr<AbstractNode> parseStatementsList();
+        std::shared_ptr<AbstractNode> parseStatement();
+        std::shared_ptr<AbstractNode> parseBlockStatement();
+        std::shared_ptr<AbstractNode> parseExpression();
+        std::shared_ptr<AbstractNode> parseLogicalTerm();
+        std::shared_ptr<AbstractNode> parseComparisonTerm();
+        std::shared_ptr<AbstractNode> parseTerm();
+        std::shared_ptr<AbstractNode> parseExponentialTerm();
+        std::shared_ptr<AbstractNode> parseFactor();
+        std::shared_ptr<AbstractNode> parseUnary();
 };
 
 class Interpreter{
