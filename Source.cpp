@@ -33,7 +33,12 @@ int executeFile(const std::string filename){
     auto endTime = std::chrono::high_resolution_clock::now();
     auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     
-    std::cout << "Exited in " << executionTime.count() << "ms" << std::endl;
+    if(exitCode == RET_CODE::OK){
+        std::cout << "Exited in " << executionTime.count() << "ms" << std::endl;
+    }else{
+        std::cout << "Exited with errors." << std::endl;
+    }
+
     return 0;
 }
 

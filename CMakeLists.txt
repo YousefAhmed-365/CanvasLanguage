@@ -14,6 +14,7 @@ set(
   AST.cpp
   Utility.cpp
   Token.cpp
+  Error.cpp
 )
 
 add_executable(canvas ${SOURCES})
