@@ -5,8 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "ctre/ctre.hpp"
-
 class Regex{
     private:
         //Variables

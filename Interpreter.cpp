@@ -142,12 +142,17 @@ std::shared_ptr<AbstractNode> TreeParser::parse(std::vector<Token> &tokenList){
 std::shared_ptr<AbstractNode> TreeParser::parseStatementsList(){
     std::shared_ptr<AbstractNode> statementsList = std::make_shared<AbstractList>();
 
+    std::shared_ptr<AbstractNode> result;
     while(!isEnd()){
         if(check("}")){
             consume("}");
             break;
         }
-        statementsList->attach(parseStatement());
+
+        result = parseStatement();
+        if(result != nullptr){
+            statementsList->attach(result);
+        }
     }
 
     return statementsList;
@@ -156,18 +161,40 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatementsList(){
 std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
     std::shared_ptr<AbstractNode> result;
 
-    if(m_currToken->type == TokenType::LIT || m_currToken->type == TokenType::OPR || check(TokenType::SYM, "(")){
+    if(m_currToken->type == TokenType::LIT || m_currToken->type == TokenType::OPR || m_currToken->value == "("){
         result = parseExpression();
         consume(";");
     }else if(check(TokenType::SYM, "{")){
         result = parseBlockStatement();
-    }else if(check(TokenType::KEY, "if")){
+    }else if(m_currToken->value == "if"){
         consume(TokenType::KEY);
         consume("(");
         result = std::make_shared<IfStatement>(parseExpression());
         consume(")");
         result->attach(parseBlockStatement());
+
+        std::shared_ptr<AbstractNode> alts = std::make_shared<AbstractList>();
+        while(m_currToken->value == "elif"){
+            consume(TokenType::KEY);
+            consume("(");
+            alts->attach(std::make_shared<IfStatement>(parseExpression()));
+            alts->getChildrens().back()->setValue("_ELIF");
+            consume(")");
+            alts->getChildrens().back()->attach(parseBlockStatement());
+        }
+        result->attach(alts);
+
+        if(m_currToken->value == "else"){
+            consume(TokenType::KEY);
+            result->attach(parseBlockStatement());
+            result->getChildrens().back()->setValue("_ELSE");
+        }
     }else{
+        if(m_currToken->value == ";"){
+            consume(TokenType::SYM);
+            return nullptr;
+        }
+
         throw ParserException("~Error~ Invalid Token Exception: " + m_currToken->value);
     }
 
