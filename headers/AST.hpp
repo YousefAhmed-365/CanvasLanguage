@@ -64,6 +64,27 @@ struct BinaryExpression : public AbstractNode{
     NodeInfo eval() override;
 };
 
+struct IfStatement : public AbstractNode{
+    IfStatement(std::shared_ptr<AbstractNode> condition);
+    ~IfStatement() = default;
+
+    NodeInfo eval() override;
+};
+
+struct WhileStatement : public AbstractNode{
+    WhileStatement(std::shared_ptr<AbstractNode> condition);
+    ~WhileStatement() = default;
+
+    NodeInfo eval() override;
+};
+
+struct RepeatStatement : public AbstractNode{
+    RepeatStatement(std::shared_ptr<AbstractNode> count);
+    ~RepeatStatement() = default;
+
+    NodeInfo eval() override;
+};
+
 struct UnaryExpression : public AbstractNode{
     OperatorType type;
 
@@ -82,9 +103,23 @@ struct Literal : public AbstractNode{
     NodeInfo eval() override;
 };
 
-struct IfStatement : public AbstractNode{
-    IfStatement(std::shared_ptr<AbstractNode> condition);
-    ~IfStatement() = default;
+struct Identifier : public AbstractNode{
+    Identifier(std::string &name);
+    ~Identifier() = default;
+
+    NodeInfo eval() override;
+};
+
+struct DefStatement : public AbstractNode{
+    DefStatement();
+    ~DefStatement() = default;
+
+    NodeInfo eval() override;
+};
+
+struct RetStatement : public AbstractNode{
+    RetStatement(std::shared_ptr<AbstractNode> expression);
+    ~RetStatement() = default;
 
     NodeInfo eval() override;
 };

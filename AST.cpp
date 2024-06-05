@@ -62,6 +62,26 @@ NodeInfo IfStatement::eval(){
     return this->info;
 }
 
+/* WhileStatement Struct */
+WhileStatement::WhileStatement(std::shared_ptr<AbstractNode> condition){
+    this->m_value = "_WHILE";
+    attach(condition);
+}
+
+NodeInfo WhileStatement::eval(){
+    return this->info;
+}
+
+/* RepeatStatement Struct */
+RepeatStatement::RepeatStatement(std::shared_ptr<AbstractNode> count){
+    this->m_value = "_REPEAT";
+    attach(count);
+}
+
+NodeInfo RepeatStatement::eval(){
+    return this->info;
+}
+
 /* BinaryExpression Struct */
 BinaryExpression::BinaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left, std::shared_ptr<AbstractNode> right){
     this->m_value = oprStr;
@@ -140,5 +160,33 @@ Literal::Literal(Data &value){
 }
 
 NodeInfo Literal::eval(){
+    return this->info;
+}
+
+/* Identifier Struct */
+Identifier::Identifier(std::string &name){
+    this->m_value = name;
+}
+
+NodeInfo Identifier::eval(){
+    return this->info;
+}
+
+/* DefStatement Struct */
+DefStatement::DefStatement(){
+    this->m_value = "_DEF";
+}
+
+NodeInfo DefStatement::eval(){
+    return this->info;
+}
+
+/* RetStatement Struct */
+RetStatement::RetStatement(std::shared_ptr<AbstractNode> expression){
+    this->m_value = "_RET";
+    attach(expression);
+}
+
+NodeInfo RetStatement::eval(){
     return this->info;
 }

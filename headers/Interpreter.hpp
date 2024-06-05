@@ -21,6 +21,7 @@ class TreeParser{
         bool check(std::string value);
         bool check(TokenType type, std::string value);
         Token *nextToken();
+        Token *DelayedConsume(TokenType type);
         void consume(TokenType type);
         void consume(std::string value);
     public:
@@ -35,6 +36,7 @@ class TreeParser{
         std::shared_ptr<AbstractNode> parseStatementsList();
         std::shared_ptr<AbstractNode> parseStatement();
         std::shared_ptr<AbstractNode> parseBlockStatement();
+        std::shared_ptr<AbstractNode> parseTupleStatement();
         std::shared_ptr<AbstractNode> parseExpression();
         std::shared_ptr<AbstractNode> parseLogicalTerm();
         std::shared_ptr<AbstractNode> parseComparisonTerm();

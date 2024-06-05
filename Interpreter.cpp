@@ -112,6 +112,13 @@ Token *TreeParser::nextToken(){
     return &m_tokens->at(m_currTokenIndex + 1);
 }
 
+Token *TreeParser::DelayedConsume(TokenType type){
+    Token *tokenPtr = m_currToken;
+    consume(type);
+
+    return tokenPtr;
+}
+
 void TreeParser::consume(TokenType type){
     if(m_currToken->type == type){
         m_currToken = &m_tokens->at((isEnd()? m_currTokenIndex : ++m_currTokenIndex));
@@ -161,7 +168,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatementsList(){
 std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
     std::shared_ptr<AbstractNode> result;
 
-    if(m_currToken->type == TokenType::LIT || m_currToken->type == TokenType::OPR || m_currToken->value == "("){
+    if(m_currToken->type == TokenType::LIT  || m_currToken->type == TokenType::IDN || m_currToken->type == TokenType::OPR || m_currToken->value == "("){
         result = parseExpression();
         consume(";");
     }else if(check(TokenType::SYM, "{")){
@@ -189,6 +196,28 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
             result->attach(parseBlockStatement());
             result->getChildrens().back()->setValue("_ELSE");
         }
+    }else if(m_currToken->value == "while"){
+        consume(TokenType::KEY);
+        consume("(");
+        result = std::make_shared<WhileStatement>(parseExpression());
+        consume(")");
+        result->attach(parseBlockStatement());
+    }else if(m_currToken->value == "repeat"){
+        consume(TokenType::KEY);
+        consume("(");
+        result = std::make_shared<RepeatStatement>(parseExpression());
+        consume(")");
+        result->attach(parseBlockStatement());
+    }else if(m_currToken->value == "def"){
+        consume(TokenType::KEY);
+        result = std::make_shared<DefStatement>();
+        result->attach(std::make_shared<Identifier>(DelayedConsume(TokenType::IDN)->value));
+        result->attach(parseTupleStatement());
+        result->attach(parseBlockStatement());
+    }else if(m_currToken->value == "ret"){
+        consume(TokenType::KEY);
+        result = std::make_shared<RetStatement>(parseExpression());
+        consume(";");
     }else{
         if(m_currToken->value == ";"){
             consume(TokenType::SYM);
@@ -205,6 +234,27 @@ std::shared_ptr<AbstractNode> TreeParser::parseBlockStatement(){
     consume("{");
     std::shared_ptr<AbstractNode> result = parseStatementsList();
     result->setValue("{}");
+
+    return result;
+}
+
+std::shared_ptr<AbstractNode> TreeParser::parseTupleStatement(){
+    std::shared_ptr<AbstractList> result = std::make_shared<AbstractList>();
+    result->setValue("()");
+    
+    consume("(");
+    while(m_currToken->value != ")"){
+        result->attach(parseExpression());
+
+        if(m_currToken->value == ","){
+            consume(TokenType::SYM);
+        }else{
+            if(m_currToken->value != ")"){
+                throw ParserException("~Error~ Invalid Token Exception: " + m_currToken->value);
+            }
+        }
+    }
+    consume(")");
 
     return result;
 }
@@ -296,6 +346,9 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
         Data data = m_currToken->value;
         result = std::make_shared<Literal>(data);
         consume(TokenType::LIT);
+    }else if(m_currToken->type == TokenType::IDN){
+        result = std::make_shared<Identifier>(m_currToken->value);
+        consume(TokenType::IDN);
     }
 
     for(auto it = unaryOperators.rbegin(); it != unaryOperators.rend(); it++){
