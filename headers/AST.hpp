@@ -6,9 +6,17 @@
 enum class NodeType{
     NONE,
 
+    ABS_LST,
     BIN_EXP,
     UNR_EXP,
+    CON_STM,
+    WHL_STM,
+    REP_STM,
+    DEF_STM,
+    RET_STM,
+    CAL_STM,
 
+    IDN,
     LIT,
     NUM_LIT,
     STR_LIT
@@ -64,6 +72,15 @@ struct BinaryExpression : public AbstractNode{
     NodeInfo eval() override;
 };
 
+struct UnaryExpression : public AbstractNode{
+    OperatorType type;
+
+    UnaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left);
+    ~UnaryExpression() = default;
+
+    NodeInfo eval() override;
+};
+
 struct IfStatement : public AbstractNode{
     IfStatement(std::shared_ptr<AbstractNode> condition);
     ~IfStatement() = default;
@@ -81,15 +98,6 @@ struct WhileStatement : public AbstractNode{
 struct RepeatStatement : public AbstractNode{
     RepeatStatement(std::shared_ptr<AbstractNode> count);
     ~RepeatStatement() = default;
-
-    NodeInfo eval() override;
-};
-
-struct UnaryExpression : public AbstractNode{
-    OperatorType type;
-
-    UnaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left);
-    ~UnaryExpression() = default;
 
     NodeInfo eval() override;
 };
@@ -120,6 +128,13 @@ struct DefStatement : public AbstractNode{
 struct RetStatement : public AbstractNode{
     RetStatement(std::shared_ptr<AbstractNode> expression);
     ~RetStatement() = default;
+
+    NodeInfo eval() override;
+};
+
+struct CallStatement : public AbstractNode{
+    CallStatement(std::string &name, std::shared_ptr<AbstractNode> argsList);
+    ~CallStatement() = default;
 
     NodeInfo eval() override;
 };

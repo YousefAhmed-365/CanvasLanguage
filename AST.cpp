@@ -5,6 +5,7 @@ NodeInfo::NodeInfo(){
     type = NodeType::NONE;
     returnCode = RET_CODE::NONE;
 }
+
 NodeInfo::NodeInfo(NodeType type, Data value, RET_CODE returnCode){
     this->type = type;
     this->data = value;
@@ -18,19 +19,24 @@ NodeInfo::NodeInfo(NodeType type, Data value, RET_CODE returnCode){
 void AbstractNode::attach(std::shared_ptr<AbstractNode> node){
     m_childrens.emplace_back(node);
 }
+
 // Helper Functions
 std::vector<std::shared_ptr<AbstractNode>> &AbstractNode::getChildrens(){
     return m_childrens;
 }
+
 std::shared_ptr<AbstractNode> AbstractNode::getChild(const unsigned int index) const{
     return m_childrens[index];
 }
+
 std::string AbstractNode::getValue(){
     return m_value;
 }
+
 void AbstractNode::setValue(std::string value){
     m_value = value;
 }
+
 void AbstractNode::out(int indent){
     for (int i = 0; i < indent; ++i) {
         std::cout << "  ";
@@ -45,47 +51,55 @@ void AbstractNode::out(int indent){
 
 /* AbstractList Struct */
 AbstractList::AbstractList(){
+    this->info.type = NodeType::ABS_LST;
     this->m_value = "[]";
 }
 
 NodeInfo AbstractList::eval(){
+
     return this->info;
 }
 
 /* IfStatement Struct */
 IfStatement::IfStatement(std::shared_ptr<AbstractNode> condition){
+    this->info.type = NodeType::CON_STM;
     this->m_value = "_IF";
     attach(condition);
 }
 
 NodeInfo IfStatement::eval(){
+
     return this->info;
 }
 
 /* WhileStatement Struct */
 WhileStatement::WhileStatement(std::shared_ptr<AbstractNode> condition){
+    this->info.type = NodeType::WHL_STM;
     this->m_value = "_WHILE";
     attach(condition);
 }
 
 NodeInfo WhileStatement::eval(){
+
     return this->info;
 }
 
 /* RepeatStatement Struct */
 RepeatStatement::RepeatStatement(std::shared_ptr<AbstractNode> count){
+    this->info.type = NodeType::REP_STM;
     this->m_value = "_REPEAT";
     attach(count);
 }
 
 NodeInfo RepeatStatement::eval(){
+
     return this->info;
 }
 
 /* BinaryExpression Struct */
 BinaryExpression::BinaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left, std::shared_ptr<AbstractNode> right){
-    this->m_value = oprStr;
     this->info.type = NodeType::BIN_EXP;
+    this->m_value = oprStr;
 
     attach(left);
     attach(right);
@@ -138,8 +152,8 @@ NodeInfo BinaryExpression::eval(){
 
 /* UnaryExpression Struct */
 UnaryExpression::UnaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left){
-    this->m_value = oprStr;
     this->info.type = NodeType::UNR_EXP;
+    this->m_value = oprStr;
 
     attach(left);
 }
@@ -152,6 +166,7 @@ NodeInfo UnaryExpression::eval(){
 
 /* Literal Struct */
 Literal::Literal(Data &value){
+    this->info.type = NodeType::LIT;
     this->m_value = std::get<std::string>(value);
     this->value = value;
     
@@ -160,33 +175,53 @@ Literal::Literal(Data &value){
 }
 
 NodeInfo Literal::eval(){
+
     return this->info;
 }
 
 /* Identifier Struct */
 Identifier::Identifier(std::string &name){
+    this->info.type = NodeType::IDN;
     this->m_value = name;
 }
 
 NodeInfo Identifier::eval(){
+
     return this->info;
 }
 
 /* DefStatement Struct */
 DefStatement::DefStatement(){
+    this->info.type = NodeType::DEF_STM;
     this->m_value = "_DEF";
 }
 
 NodeInfo DefStatement::eval(){
+    
     return this->info;
 }
 
 /* RetStatement Struct */
 RetStatement::RetStatement(std::shared_ptr<AbstractNode> expression){
+    this->info.type = NodeType::RET_STM;
     this->m_value = "_RET";
     attach(expression);
 }
 
 NodeInfo RetStatement::eval(){
+
+    return this->info;
+}
+
+/* CallStatement Struct */
+CallStatement::CallStatement(std::string &name, std::shared_ptr<AbstractNode> argsList){
+    this->info.type = NodeType::CAL_STM;
+    this->m_value = "_CALL";
+    attach(std::make_shared<Identifier>(name));
+    attach(argsList);
+}
+
+NodeInfo CallStatement::eval(){
+
     return this->info;
 }

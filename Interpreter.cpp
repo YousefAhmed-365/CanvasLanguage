@@ -246,7 +246,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseTupleStatement(){
     while(m_currToken->value != ")"){
         result->attach(parseExpression());
 
-        if(m_currToken->value == ","){
+        if(m_currToken->value == "," && nextToken()->value != ")"){
             consume(TokenType::SYM);
         }else{
             if(m_currToken->value != ")"){
@@ -347,8 +347,13 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
         result = std::make_shared<Literal>(data);
         consume(TokenType::LIT);
     }else if(m_currToken->type == TokenType::IDN){
-        result = std::make_shared<Identifier>(m_currToken->value);
-        consume(TokenType::IDN);
+        if(nextToken()->value == "("){
+            std::string &identifier = DelayedConsume(TokenType::IDN)->value;
+            result = std::make_shared<CallStatement>(identifier, parseTupleStatement());
+        }else{
+            result = std::make_shared<Identifier>(m_currToken->value);
+            consume(TokenType::IDN);
+        }
     }
 
     for(auto it = unaryOperators.rbegin(); it != unaryOperators.rend(); it++){
