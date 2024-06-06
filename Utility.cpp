@@ -73,7 +73,13 @@ bool g_util::isStringLiteral(std::string &str){
 }
 
 bool g_util::isIdentifier(std::string &str){
-    return !isKeyword(str) && Regex::match(str, "[@A-Za-z_]+");
+    for(auto &e : str){
+        if(!std::isalpha(e) && e != '@' && e != '_'){
+            return false;
+        }
+    }
+
+    return !isKeyword(str);
 }
 
 float variantAsNum(Data &data){

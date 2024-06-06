@@ -2,5 +2,6 @@
 /build/
 code.canvas
 build.sh
+report.sh
 perf.data
 perf.data.old

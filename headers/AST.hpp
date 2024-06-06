@@ -26,11 +26,10 @@ struct NodeInfo{
     // Variables
     NodeType type;
     Data data;
-    RET_CODE returnCode;
 
     // Constructor & Destructor
     NodeInfo();
-    NodeInfo(NodeType type, Data value, RET_CODE returnCode);
+    NodeInfo(NodeType type, Data value);
     ~NodeInfo() = default;
 };
 
@@ -38,7 +37,6 @@ class AbstractNode{
     protected:
         // Variables
         std::string m_value;
-        RET_CODE m_returnCode;
         std::vector<std::shared_ptr<AbstractNode>> m_childrens;
     public:
         // Variables
@@ -135,6 +133,13 @@ struct RetStatement : public AbstractNode{
 struct CallStatement : public AbstractNode{
     CallStatement(std::string &name, std::shared_ptr<AbstractNode> argsList);
     ~CallStatement() = default;
+
+    NodeInfo eval() override;
+};
+
+struct AssignementStatment : public AbstractNode{
+    AssignementStatment(std::string &identifier, std::shared_ptr<AbstractNode> expression);
+    ~AssignementStatment() = default;
 
     NodeInfo eval() override;
 };

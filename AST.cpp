@@ -3,13 +3,11 @@
 // Constructor & Destructor
 NodeInfo::NodeInfo(){
     type = NodeType::NONE;
-    returnCode = RET_CODE::NONE;
 }
 
-NodeInfo::NodeInfo(NodeType type, Data value, RET_CODE returnCode){
+NodeInfo::NodeInfo(NodeType type, Data value){
     this->type = type;
     this->data = value;
-    this->returnCode = returnCode;
 }
 
 /* AbstractNode Class */
@@ -38,6 +36,7 @@ void AbstractNode::setValue(std::string value){
 }
 
 void AbstractNode::out(int indent){
+    std::string outBuffer;
     for (int i = 0; i < indent; ++i) {
         std::cout << "  ";
     }
@@ -222,6 +221,18 @@ CallStatement::CallStatement(std::string &name, std::shared_ptr<AbstractNode> ar
 }
 
 NodeInfo CallStatement::eval(){
+
+    return this->info;
+}
+
+/* AssignementStatment Struct */
+AssignementStatment::AssignementStatment(std::string &identifier, std::shared_ptr<AbstractNode> expression){
+    this->m_value = "=";
+    attach(std::make_shared<Identifier>(identifier));
+    attach(expression);
+}
+
+NodeInfo AssignementStatment::eval(){
 
     return this->info;
 }

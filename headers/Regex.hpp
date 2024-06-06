@@ -4,6 +4,7 @@
 #include <regex>
 #include <string>
 #include <vector>
+#include <boost/regex.hpp>
 
 class Regex{
     private:
@@ -18,6 +19,7 @@ class Regex{
         bool match(const std::string str) const;
         static bool match(const std::string str, std::string pattern);
         std::vector<std::string> matchAll(const std::string str) const;
+        std::vector<std::string> boostMatchAll(const std::string str) const;
 };
 
 std::vector<std::string> PreRegex(const std::string str);

@@ -1,5 +1,4 @@
 #include "headers/CommonLibs.hpp"
-
 #include "headers/Interpreter.hpp"
 
 const std::string versionInformation = R"(Canvas Alpha v0.1)";
@@ -29,7 +28,7 @@ int executeFile(const std::string filename){
     } file.close();
 
     auto startTime = std::chrono::high_resolution_clock::now();
-    RET_CODE exitCode = mainInterpreter.execute(code);
+    RET_CODE exitCode = mainInterpreter.execute(code, true);
     auto endTime = std::chrono::high_resolution_clock::now();
     auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     

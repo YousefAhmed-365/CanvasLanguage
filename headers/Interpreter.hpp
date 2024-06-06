@@ -22,6 +22,7 @@ class TreeParser{
         bool check(TokenType type, std::string value);
         Token *nextToken();
         Token *DelayedConsume(TokenType type);
+        void consume();
         void consume(TokenType type);
         void consume(std::string value);
     public:
@@ -57,7 +58,7 @@ class Interpreter{
         ~Interpreter();
 
         // Functions
-        RET_CODE execute(std::string &str);
+        RET_CODE execute(std::string &str, bool isDebug = false);
         std::vector<Token> lex(const std::string &str, const std::string &pattern);
 
         void debug_outTokens(std::vector<Token> &tokens);
