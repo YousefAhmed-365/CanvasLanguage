@@ -53,7 +53,7 @@ Data ScopeManager::findData(const std::string &name, SymbolSearchType type){
     return m_currentScope->find(name, type);
 }
 
-void ScopeManager::debug_outTree() {
+void ScopeManager::debug_outScopes() {
     std::stack<std::shared_ptr<SymbolTable>> scopeStack;
     std::shared_ptr<SymbolTable> current = m_currentScope;
 

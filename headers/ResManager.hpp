@@ -49,7 +49,7 @@ class ScopeManager{
         void pushScope();
         void popScope();
 
-        void debug_outTree();
+        void debug_outScopes();
 };
 
 #endif

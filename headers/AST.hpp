@@ -2,6 +2,7 @@
 #define AST_HPP
 
 #include "CommonLibs.hpp"
+#include "ResManager.hpp"
 
 enum class NodeType{
     NONE,
@@ -15,6 +16,7 @@ enum class NodeType{
     DEF_STM,
     RET_STM,
     CAL_STM,
+    ASG_STM,
 
     IDN,
     LIT,
@@ -41,24 +43,27 @@ class AbstractNode{
     public:
         // Variables
         NodeInfo info;
+
         // Constructor & Destructor
         virtual ~AbstractNode() = default;
+
         // Functions
-        virtual NodeInfo eval() = 0;
+        virtual NodeInfo eval(ScopeManager &scope) = 0;
         void attach(std::shared_ptr<AbstractNode> node);
+        
         // Helper Functions
         std::vector<std::shared_ptr<AbstractNode>> &getChildrens();
         std::shared_ptr<AbstractNode> getChild(const unsigned int index) const;
         std::string getValue();
         void setValue(std::string value);
-        void out(int defaultIndent);
+        void debug_outNodes(int defaultIndent);
 };
 
 struct AbstractList : public AbstractNode{
     AbstractList();
     ~AbstractList() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct BinaryExpression : public AbstractNode{
@@ -67,37 +72,35 @@ struct BinaryExpression : public AbstractNode{
     BinaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left, std::shared_ptr<AbstractNode> right);
     ~BinaryExpression() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct UnaryExpression : public AbstractNode{
-    OperatorType type;
-
     UnaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left);
     ~UnaryExpression() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct IfStatement : public AbstractNode{
     IfStatement(std::shared_ptr<AbstractNode> condition);
     ~IfStatement() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct WhileStatement : public AbstractNode{
     WhileStatement(std::shared_ptr<AbstractNode> condition);
     ~WhileStatement() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct RepeatStatement : public AbstractNode{
     RepeatStatement(std::shared_ptr<AbstractNode> count);
     ~RepeatStatement() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct Literal : public AbstractNode{
@@ -106,42 +109,42 @@ struct Literal : public AbstractNode{
     Literal(Data &value);
     ~Literal() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct Identifier : public AbstractNode{
     Identifier(std::string &name);
     ~Identifier() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct DefStatement : public AbstractNode{
     DefStatement();
     ~DefStatement() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct RetStatement : public AbstractNode{
     RetStatement(std::shared_ptr<AbstractNode> expression);
     ~RetStatement() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct CallStatement : public AbstractNode{
     CallStatement(std::string &name, std::shared_ptr<AbstractNode> argsList);
     ~CallStatement() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
-struct AssignementStatment : public AbstractNode{
-    AssignementStatment(std::string &identifier, std::shared_ptr<AbstractNode> expression);
+struct AssignementStatment : public AbstractNode{    
+    AssignementStatment(std::string &oprStr, std::string &identifier, std::shared_ptr<AbstractNode> expression);
     ~AssignementStatment() = default;
 
-    NodeInfo eval() override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 #endif

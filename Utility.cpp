@@ -26,6 +26,7 @@ bool g_util::isOperator(std::string &str){
         str == "*=" ||    
         str == "/=" ||
         str == "%=" ||
+        str == "^=" ||
         str == "^"  ||
         str == "==" ||
         str == ">=" ||
@@ -35,7 +36,9 @@ bool g_util::isOperator(std::string &str){
         str == ">"  ||
         str == "!"  ||
         str == "&&" ||
-        str == "||"
+        str == "||" ||
+        str == "++" ||
+        str == "--"
     );
 }
 

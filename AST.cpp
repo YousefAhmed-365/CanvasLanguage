@@ -35,7 +35,7 @@ void AbstractNode::setValue(std::string value){
     m_value = value;
 }
 
-void AbstractNode::out(int indent){
+void AbstractNode::debug_outNodes(int indent){
     std::string outBuffer;
     for (int i = 0; i < indent; ++i) {
         std::cout << "  ";
@@ -44,7 +44,7 @@ void AbstractNode::out(int indent){
     std::cout << "⤷ ● " << m_value << std::endl;
 
     for (const auto &child : m_childrens) {
-        child->out(indent + 1);
+        child->debug_outNodes(indent + 1);
     }
 }
 
@@ -54,7 +54,7 @@ AbstractList::AbstractList(){
     this->m_value = "[]";
 }
 
-NodeInfo AbstractList::eval(){
+NodeInfo AbstractList::eval(ScopeManager &scope){
 
     return this->info;
 }
@@ -66,7 +66,7 @@ IfStatement::IfStatement(std::shared_ptr<AbstractNode> condition){
     attach(condition);
 }
 
-NodeInfo IfStatement::eval(){
+NodeInfo IfStatement::eval(ScopeManager &scope){
 
     return this->info;
 }
@@ -78,7 +78,7 @@ WhileStatement::WhileStatement(std::shared_ptr<AbstractNode> condition){
     attach(condition);
 }
 
-NodeInfo WhileStatement::eval(){
+NodeInfo WhileStatement::eval(ScopeManager &scope){
 
     return this->info;
 }
@@ -90,7 +90,7 @@ RepeatStatement::RepeatStatement(std::shared_ptr<AbstractNode> count){
     attach(count);
 }
 
-NodeInfo RepeatStatement::eval(){
+NodeInfo RepeatStatement::eval(ScopeManager &scope){
 
     return this->info;
 }
@@ -104,9 +104,9 @@ BinaryExpression::BinaryExpression(std::string &oprStr, std::shared_ptr<Abstract
     attach(right);
 }
 
-NodeInfo BinaryExpression::eval(){
-    NodeInfo leftNode = m_childrens[0]->eval();
-    NodeInfo rightNode = m_childrens[1]->eval();
+NodeInfo BinaryExpression::eval(ScopeManager &scope){
+    NodeInfo leftNode = m_childrens[0]->eval(scope);
+    NodeInfo rightNode = m_childrens[1]->eval(scope);
 
     switch (this->type){
         case OperatorType::OPR_ADD:
@@ -157,8 +157,8 @@ UnaryExpression::UnaryExpression(std::string &oprStr, std::shared_ptr<AbstractNo
     attach(left);
 }
 
-NodeInfo UnaryExpression::eval(){
-    NodeInfo leftNode = m_childrens[0]->eval();
+NodeInfo UnaryExpression::eval(ScopeManager &scope){
+    NodeInfo leftNode = m_childrens[0]->eval(scope);
 
     return this->info;
 }
@@ -173,7 +173,7 @@ Literal::Literal(Data &value){
     this->info.data = value;
 }
 
-NodeInfo Literal::eval(){
+NodeInfo Literal::eval(ScopeManager &scope){
 
     return this->info;
 }
@@ -184,7 +184,7 @@ Identifier::Identifier(std::string &name){
     this->m_value = name;
 }
 
-NodeInfo Identifier::eval(){
+NodeInfo Identifier::eval(ScopeManager &scope){
 
     return this->info;
 }
@@ -195,7 +195,7 @@ DefStatement::DefStatement(){
     this->m_value = "_DEF";
 }
 
-NodeInfo DefStatement::eval(){
+NodeInfo DefStatement::eval(ScopeManager &scope){
     
     return this->info;
 }
@@ -207,7 +207,7 @@ RetStatement::RetStatement(std::shared_ptr<AbstractNode> expression){
     attach(expression);
 }
 
-NodeInfo RetStatement::eval(){
+NodeInfo RetStatement::eval(ScopeManager &scope){
 
     return this->info;
 }
@@ -220,19 +220,20 @@ CallStatement::CallStatement(std::string &name, std::shared_ptr<AbstractNode> ar
     attach(argsList);
 }
 
-NodeInfo CallStatement::eval(){
+NodeInfo CallStatement::eval(ScopeManager &scope){
 
     return this->info;
 }
 
 /* AssignementStatment Struct */
-AssignementStatment::AssignementStatment(std::string &identifier, std::shared_ptr<AbstractNode> expression){
-    this->m_value = "=";
+AssignementStatment::AssignementStatment(std::string &oprStr, std::string &identifier, std::shared_ptr<AbstractNode> expression){
+    this->info.type = NodeType::ASG_STM;
+    this->m_value = oprStr;
     attach(std::make_shared<Identifier>(identifier));
     attach(expression);
 }
 
-NodeInfo AssignementStatment::eval(){
+NodeInfo AssignementStatment::eval(ScopeManager &scope){
 
     return this->info;
 }

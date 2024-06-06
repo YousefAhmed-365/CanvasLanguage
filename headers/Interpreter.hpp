@@ -51,6 +51,7 @@ class Interpreter{
     private:
         // Variables
         TreeParser m_parser;
+        ScopeManager m_scopeManager;
     public:
         // Variables
         // Constructor & Destructor

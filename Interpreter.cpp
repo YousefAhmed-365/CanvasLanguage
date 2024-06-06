@@ -12,7 +12,7 @@ Interpreter::~Interpreter(){
 
 // Functions
 RET_CODE Interpreter::execute(std::string &str, bool isDebug){
-    static const std::string DEFAULT_REGEX_PATTERN = "(\"[^\"]*\"|[@A-Za-z_]+)|([0-9]+)|(==|>=|>|<=|<|!=|!|&&|\\|\\|)|(\\+\\=|\\-\\=|\\*\\=|\\/\\=|\\=)|(\\+|\\-|\\*|\\/|\\%|\\^|\\.)|(\\(|\\)|\\{|\\}|\\[|\\]|;|:|\\,)";
+    static const std::string DEFAULT_REGEX_PATTERN = "(\"[^\"]*\"|[@A-Za-z_]+)|([0-9]+)|(==|>=|>|<=|<|!=|!|&&|\\|\\|)|(\\+\\=|\\-\\=|\\*\\=|\\/\\=|\\=)|(\\+\\+|\\+|\\-\\-|\\-|\\*|\\/|\\%|\\^|\\.)|(\\(|\\)|\\{|\\}|\\[|\\]|;|:|\\,)";
     std::vector<Token> tokens = lex(str, DEFAULT_REGEX_PATTERN);
     
     if(isDebug){
@@ -23,8 +23,10 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
         std::shared_ptr<AbstractNode> treeRoot = m_parser.parse(tokens);
 
         if(treeRoot != nullptr && isDebug){
-            treeRoot->out(0);
+            treeRoot->debug_outNodes(0);
         }
+
+        // treeRoot->eval(m_scopeManager);
     }catch(ParserException err){
         std::cout << err.what() << std::endl;
         
@@ -177,11 +179,13 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
     std::shared_ptr<AbstractNode> result;
 
     if(m_currToken->type == TokenType::LIT  || m_currToken->type == TokenType::IDN || m_currToken->type == TokenType::OPR || m_currToken->value == "("){
-        if(m_currToken->type == TokenType::IDN && nextToken()->value == "="){
-            std::string tokenStr = m_currToken->value;
+        if(m_currToken->type == TokenType::IDN && (nextToken()->value == "=" || nextToken()->value == "+=" || nextToken()->value == "-=" || nextToken()->value == "*=" 
+        || nextToken()->value == "/=" || nextToken()->value == "%=" || nextToken()->value == "^=")){
+            std::string identifierStr = m_currToken->value;
             consume();
-            consume("=");
-            result = std::make_shared<AssignementStatment>(tokenStr, parseExpression());
+            std::string oprStr = m_currToken->value;
+            consume(TokenType::OPR);
+            result = std::make_shared<AssignementStatment>(oprStr, identifierStr, parseExpression());
         }else{
             result = parseExpression();
         }
@@ -344,14 +348,18 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
     }
 
     switch (m_currToken->type){
+    case TokenType::OPR:
+        if((m_currToken->value == "++" || m_currToken->value == "--") && nextToken()->type == TokenType::IDN){
+            std::string oprStr = DelayedConsume(TokenType::OPR)->value;
+            std::string &identifier = DelayedConsume(TokenType::IDN)->value;
+            result = std::make_shared<UnaryExpression>(oprStr, std::make_shared<Identifier>(identifier));
+        }
+        break;
     case TokenType::SYM:
         if(m_currToken->value == "("){
             consume();
             result = parseExpression();
             consume(")");
-
-        }else{
-            throw ParserException("~Error~ Invalid Token Exception: " + m_currToken->value);
         }
         break;
     case TokenType::LIT:
@@ -365,6 +373,10 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
         if(nextToken()->value == "("){
             std::string &identifier = DelayedConsume(TokenType::IDN)->value;
             result = std::make_shared<CallStatement>(identifier, parseTupleStatement());
+        }else if(nextToken()->value == "++" || nextToken()->value == "--"){
+            std::string &identifier = DelayedConsume(TokenType::IDN)->value;
+            std::string oprStr = DelayedConsume(TokenType::OPR)->value + "_DEL";
+            result = std::make_shared<UnaryExpression>(oprStr, std::make_shared<Identifier>(identifier));
         }else{
             result = std::make_shared<Identifier>(m_currToken->value);
             consume();

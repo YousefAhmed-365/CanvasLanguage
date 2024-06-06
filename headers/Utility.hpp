@@ -28,6 +28,10 @@ enum class OperatorType{
     OPR_DIV,
     OPR_MOD,
     OPR_EXP,
+    OPR_INC,
+    OPR_INC_DEL,
+    OPR_DEC,
+    OPR_DEC_DEL,
 
     LOG_EQL,
     LOG_NEQ,
@@ -37,7 +41,15 @@ enum class OperatorType{
     LOG_LES,
     LOG_AND,
     LOG_LOR,
-    LOG_NOT
+    LOG_NOT,
+
+    ASG_EQL,
+    ASG_ADD,
+    ASG_SUB,
+    ASG_MUL,
+    ASG_DIV,
+    ASG_MOD,
+    ASG_EXP
 };
 
 const std::unordered_map<OperatorType, std::string> operatorTokenStr = {
@@ -47,6 +59,8 @@ const std::unordered_map<OperatorType, std::string> operatorTokenStr = {
     {OperatorType::OPR_DIV, "/"},
     {OperatorType::OPR_MOD, "%"},
     {OperatorType::OPR_EXP, "^"},
+    {OperatorType::OPR_INC, "++"},
+    {OperatorType::OPR_DEC, "--"},
 
     {OperatorType::LOG_EQL, "=="},
     {OperatorType::LOG_NEQ, "!="},
@@ -56,7 +70,15 @@ const std::unordered_map<OperatorType, std::string> operatorTokenStr = {
     {OperatorType::LOG_LES, "<"},
     {OperatorType::LOG_AND, "&&"},
     {OperatorType::LOG_LOR, "||"},
-    {OperatorType::LOG_NOT, "!"}
+    {OperatorType::LOG_NOT, "!"},
+    
+    {OperatorType::LOG_NOT, "=="},
+    {OperatorType::LOG_NOT, "+="},
+    {OperatorType::LOG_NOT, "-="},
+    {OperatorType::LOG_NOT, "*="},
+    {OperatorType::LOG_NOT, "/="},
+    {OperatorType::LOG_NOT, "%="},
+    {OperatorType::LOG_NOT, "^="}
 };
 
 
