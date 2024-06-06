@@ -52,6 +52,37 @@ enum class OperatorType{
     ASG_EXP
 };
 
+const std::unordered_map<std::string, OperatorType> operatorStrToken = {
+    {"+", OperatorType::OPR_ADD},
+    {"-", OperatorType::OPR_SUB},
+    {"*", OperatorType::OPR_MUL},
+    {"/", OperatorType::OPR_DIV},
+    {"%", OperatorType::OPR_MOD},
+    {"^", OperatorType::OPR_EXP},
+    {"++", OperatorType::OPR_INC},
+    {"++_DEL", OperatorType::OPR_INC_DEL},
+    {"--", OperatorType::OPR_DEC},
+    {"--_DEL", OperatorType::OPR_DEC_DEL},
+
+    {"=", OperatorType::ASG_EQL},
+    {"+=", OperatorType::ASG_ADD},
+    {"-=", OperatorType::ASG_SUB},
+    {"*=", OperatorType::ASG_MUL},
+    {"/=", OperatorType::ASG_DIV},
+    {"%=", OperatorType::ASG_MOD},
+    {"^=", OperatorType::ASG_EXP},
+
+    {"==", OperatorType::LOG_EQL},
+    {"!=", OperatorType::LOG_NEQ},
+    {">=", OperatorType::LOG_GEQ},
+    {">", OperatorType::LOG_GRE},
+    {"<=", OperatorType::LOG_LEQ},
+    {"<", OperatorType::LOG_LES},
+    {"&&", OperatorType::LOG_AND},
+    {"||", OperatorType::LOG_LOR},
+    {"!", OperatorType::LOG_NOT}
+};
+
 const std::unordered_map<OperatorType, std::string> operatorTokenStr = {
     {OperatorType::OPR_ADD, "+"},
     {OperatorType::OPR_SUB, "-"},
@@ -93,5 +124,6 @@ namespace g_util{
 };
 
 float variantAsNum(Data &data);
-
+std::string variantAsStr(Data &data);
+std::string stripStr(std::string &str);
 #endif

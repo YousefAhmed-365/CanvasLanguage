@@ -11,5 +11,6 @@
 #include <stack>
 #include <algorithm>
 #include <array>
+#include <math.h>
 
 #include "Utility.hpp"

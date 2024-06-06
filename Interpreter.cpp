@@ -12,6 +12,9 @@ Interpreter::~Interpreter(){
 
 // Functions
 RET_CODE Interpreter::execute(std::string &str, bool isDebug){
+    if(str.empty())
+        return RET_CODE::OK;
+
     static const std::string DEFAULT_REGEX_PATTERN = "(\"[^\"]*\"|[@A-Za-z_]+)|([0-9]+)|(==|>=|>|<=|<|!=|!|&&|\\|\\|)|(\\+\\=|\\-\\=|\\*\\=|\\/\\=|\\=)|(\\+\\+|\\+|\\-\\-|\\-|\\*|\\/|\\%|\\^|\\.)|(\\(|\\)|\\{|\\}|\\[|\\]|;|:|\\,)";
     std::vector<Token> tokens = lex(str, DEFAULT_REGEX_PATTERN);
     
@@ -26,7 +29,8 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
             treeRoot->debug_outNodes(0);
         }
 
-        // treeRoot->eval(m_scopeManager);
+        NodeInfo &rootResult = treeRoot->eval(m_scopeManager);
+        std::cout << "Root Result: " << variantAsStr(rootResult.data) << std::endl;
     }catch(ParserException err){
         std::cout << err.what() << std::endl;
         
@@ -51,9 +55,9 @@ std::vector<Token> Interpreter::lex(const std::string &str, const std::string &p
         }else if(g_util::isSymbol(e)){
             tokens.emplace_back(TokenType::SYM, e);
         }else if(g_util::isNumLiteral(e)){
-            tokens.emplace_back(TokenType::LIT, e);
+            tokens.emplace_back(TokenType::NUM_LIT, e);
         }else if(g_util::isStringLiteral(e)){
-            tokens.emplace_back(TokenType::LIT, e);
+            tokens.emplace_back(TokenType::STR_LIT, e);
         }else if(g_util::isIdentifier(e)){
             tokens.emplace_back(TokenType::IDN, e);
         }
@@ -71,6 +75,8 @@ void Interpreter::debug_outTokens(std::vector<Token> &tokens){
         {TokenType::SYM, "SYM"},
         {TokenType::KEY, "KEY"},
         {TokenType::LIT, "LIT"},
+        {TokenType::NUM_LIT, "NUM_LIT"},
+        {TokenType::STR_LIT, "STR_LIT"},
         {TokenType::STR_LIT, "STR"},
         {TokenType::NUM_LIT, "NUM"}
     };
@@ -87,6 +93,7 @@ TreeParser::TreeParser(){
     this->m_tokens = nullptr;
     this->m_currToken = nullptr;
     this->m_currTokenIndex = 0;
+    this->m_isParsingUnary = false;
 }
 
 TreeParser::~TreeParser(){
@@ -178,7 +185,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatementsList(){
 std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
     std::shared_ptr<AbstractNode> result;
 
-    if(m_currToken->type == TokenType::LIT  || m_currToken->type == TokenType::IDN || m_currToken->type == TokenType::OPR || m_currToken->value == "("){
+    if((m_currToken->type == TokenType::NUM_LIT || m_currToken->type == TokenType::STR_LIT) || m_currToken->type == TokenType::IDN || m_currToken->type == TokenType::OPR || m_currToken->value == "("){
         if(m_currToken->type == TokenType::IDN && (nextToken()->value == "=" || nextToken()->value == "+=" || nextToken()->value == "-=" || nextToken()->value == "*=" 
         || nextToken()->value == "/=" || nextToken()->value == "%=" || nextToken()->value == "^=")){
             std::string identifierStr = m_currToken->value;
@@ -187,6 +194,9 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
             consume(TokenType::OPR);
             result = std::make_shared<AssignementStatment>(oprStr, identifierStr, parseExpression());
         }else{
+            if(m_currToken->value == "-"){
+                m_isParsingUnary = true;
+            }
             result = parseExpression();
         }
         consume(";");
@@ -305,7 +315,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseComparisonTerm(){
     std::shared_ptr<AbstractNode> result = parseTerm();
 
     std::string tokenStr;
-    while(m_currToken->value == "+" || m_currToken->value == "-"){
+    while(m_currToken->value == "+" || (!m_isParsingUnary && m_currToken->value == "-")){
         tokenStr = DelayedConsume(TokenType::OPR)->value;
         result = std::make_shared<BinaryExpression>(tokenStr, result, parseTerm());
     }
@@ -362,10 +372,20 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
             consume(")");
         }
         break;
-    case TokenType::LIT:
+    case TokenType::NUM_LIT:
+        {
+            Data data = m_currToken->value;
+            data = std::stof(std::get<std::string>(data));
+            result = std::make_shared<Literal>(data);
+            result->info.type = NodeType::NUM_LIT;
+            consume();
+        }
+        break;
+    case TokenType::STR_LIT:
         {
             Data data = m_currToken->value;
             result = std::make_shared<Literal>(data);
+            result->info.type = NodeType::STR_LIT;
             consume();
         }
         break;
@@ -387,7 +407,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
         break;
     }
 
-    for(auto it = unaryOperators.rbegin(); it != unaryOperators.rend(); it++){
+    for(auto it = unaryOperators.rbegin(); it != unaryOperators.rend(); ++it){
         result = std::make_shared<UnaryExpression>((*it)->value, result);
     }
 

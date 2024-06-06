@@ -7,6 +7,7 @@ Token::Token(){
     type = TokenType::NONE;
     value = "";
 }
+
 Token::Token(TokenType type, std::string str){
     this->type = type;
     value = str;

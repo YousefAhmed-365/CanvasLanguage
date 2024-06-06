@@ -15,6 +15,8 @@ class TreeParser{
         std::string m_currTokenStr;
         Token *m_currToken;
 
+        bool m_isParsingUnary;
+
         // Functions
         bool isEnd();
         bool check(TokenType type);

@@ -92,3 +92,17 @@ float variantAsNum(Data &data){
 
     return std::get<float>(data);
 }
+
+std::string variantAsStr(Data &data){
+    if(std::holds_alternative<int32_t>(data)){
+        return std::to_string(std::get<int32_t>(data));
+    }else if(std::holds_alternative<float>(data)){
+        return std::to_string(std::get<float>(data));
+    }
+
+    return std::get<std::string>(data);
+}
+
+std::string stripStr(std::string &str){
+    return str.length() < 2 ? str : str.substr(1, str.size() - 2);
+}
