@@ -7,6 +7,7 @@
 #include <unordered_set>
 
 #include "Regex.hpp"
+#include "ResManager.hpp"
 
 // Interpreter Variables
 using Data = std::variant<std::int32_t, float, std::string>;
@@ -125,5 +126,9 @@ namespace g_util{
 
 float variantAsNum(Data &data);
 std::string variantAsStr(Data &data);
+bool isVariantEmptyOrNull(Data data);
+
 std::string stripStr(std::string &str);
+std::string sanitizeStr(std::string &str);
+
 #endif

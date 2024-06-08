@@ -23,17 +23,25 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
     }
 
     try{
+        auto compileStartTime = std::chrono::high_resolution_clock::now();
         std::shared_ptr<AbstractNode> treeRoot = m_parser.parse(tokens);
+        auto compileEndTime = std::chrono::high_resolution_clock::now();
+        auto compileTime = std::chrono::duration_cast<std::chrono::milliseconds>(compileEndTime - compileStartTime);
 
         if(treeRoot != nullptr && isDebug){
+            std::cout << "\nNode Tree\n->" << std::endl;
             treeRoot->debug_outNodes(0);
         }
-
+        
         NodeInfo &rootResult = treeRoot->eval(m_scopeManager);
-        std::cout << "Root Result: " << variantAsStr(rootResult.data) << std::endl;
+        auto executionEndTime = std::chrono::high_resolution_clock::now();
+        auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(executionEndTime - compileStartTime);
+
+
+        std::cout << "\nExited in " << executionTime.count() << "ms C/E(" << compileTime.count() << "ms, " << executionTime.count() - compileTime.count() << "ms)." << std::endl;
     }catch(ParserException err){
         std::cout << err.what() << std::endl;
-        
+
         return RET_CODE::ERR; 
     }
 
@@ -160,13 +168,14 @@ std::shared_ptr<AbstractNode> TreeParser::parse(std::vector<Token> &tokenList){
     m_tokens = &tokenList;
     m_currToken = &m_tokens->at(0);
 
-    return parseStatementsList();
+    return parseBlockStatement();
 }
 
-std::shared_ptr<AbstractNode> TreeParser::parseStatementsList(){
-    std::shared_ptr<AbstractNode> statementsList = std::make_shared<AbstractList>();
-
+std::shared_ptr<AbstractNode> TreeParser::parseBlockStatement(){
+    consume("{");
+    std::shared_ptr<AbstractNode> statementsList = std::make_shared<BlockStatement>();
     std::shared_ptr<AbstractNode> result;
+
     while(!isEnd()){
         if(m_currToken->value == "}"){
             consume("}");
@@ -186,8 +195,9 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
     std::shared_ptr<AbstractNode> result;
 
     if((m_currToken->type == TokenType::NUM_LIT || m_currToken->type == TokenType::STR_LIT) || m_currToken->type == TokenType::IDN || m_currToken->type == TokenType::OPR || m_currToken->value == "("){
-        if(m_currToken->type == TokenType::IDN && (nextToken()->value == "=" || nextToken()->value == "+=" || nextToken()->value == "-=" || nextToken()->value == "*=" 
-        || nextToken()->value == "/=" || nextToken()->value == "%=" || nextToken()->value == "^=")){
+        std::string &nextTokenValue = nextToken()->value;
+        if(m_currToken->type == TokenType::IDN && (nextTokenValue == "=" || nextTokenValue == "+=" || nextTokenValue == "-=" || nextTokenValue == "*=" 
+        || nextTokenValue == "/=" || nextTokenValue == "%=" || nextTokenValue == "^=")){
             std::string identifierStr = m_currToken->value;
             consume();
             std::string oprStr = m_currToken->value;
@@ -255,14 +265,6 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
 
         throw ParserException("~Error~ Invalid Token Exception: " + m_currToken->value);
     }
-
-    return result;
-}
-
-std::shared_ptr<AbstractNode> TreeParser::parseBlockStatement(){
-    consume("{");
-    std::shared_ptr<AbstractNode> result = parseStatementsList();
-    result->setValue("{}");
 
     return result;
 }
@@ -360,7 +362,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
     switch (m_currToken->type){
     case TokenType::OPR:
         if((m_currToken->value == "++" || m_currToken->value == "--") && nextToken()->type == TokenType::IDN){
-            std::string oprStr = DelayedConsume(TokenType::OPR)->value;
+            std::string &oprStr = DelayedConsume(TokenType::OPR)->value;
             std::string &identifier = DelayedConsume(TokenType::IDN)->value;
             result = std::make_shared<UnaryExpression>(oprStr, std::make_shared<Identifier>(identifier));
         }
@@ -390,16 +392,19 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
         }
         break;
     case TokenType::IDN:
-        if(nextToken()->value == "("){
+        {
+        std::string &nextTokenValue = nextToken()->value;
+        if(nextTokenValue == "("){
             std::string &identifier = DelayedConsume(TokenType::IDN)->value;
             result = std::make_shared<CallStatement>(identifier, parseTupleStatement());
-        }else if(nextToken()->value == "++" || nextToken()->value == "--"){
+        }else if(nextTokenValue == "++" || nextTokenValue == "--"){
             std::string &identifier = DelayedConsume(TokenType::IDN)->value;
             std::string oprStr = DelayedConsume(TokenType::OPR)->value + "_DEL";
             result = std::make_shared<UnaryExpression>(oprStr, std::make_shared<Identifier>(identifier));
         }else{
             result = std::make_shared<Identifier>(m_currToken->value);
             consume();
+        }
         }
         break;
     

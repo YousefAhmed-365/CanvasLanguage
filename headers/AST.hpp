@@ -8,6 +8,7 @@
 enum class NodeType{
     NONE,
 
+    BLC_STM,
     ABS_LST,
     BIN_EXP,
     UNR_EXP,
@@ -60,9 +61,17 @@ class AbstractNode{
         void debug_outNodes(int defaultIndent);
 };
 
+
 struct AbstractList : public AbstractNode{
     AbstractList();
     ~AbstractList() = default;
+
+    NodeInfo &eval(ScopeManager &scope) override;
+};
+
+struct BlockStatement : public AbstractNode{
+    BlockStatement();
+    ~BlockStatement() = default;
 
     NodeInfo &eval(ScopeManager &scope) override;
 };
@@ -147,5 +156,8 @@ struct AssignementStatment : public AbstractNode{
 
     NodeInfo &eval(ScopeManager &scope) override;
 };
+
+// Helper Functions
+NodeInfo identifierToLiteral(NodeInfo &info, ScopeManager &scope);
 
 #endif

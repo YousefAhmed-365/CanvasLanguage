@@ -11,14 +11,14 @@ void SymbolTable::push(const std::string& name, const Data& value){
     m_table[name] = value;
 }
 
-Data SymbolTable::find(const std::string& name, SymbolSearchType type){
+Data *SymbolTable::find(const std::string& name, SymbolSearchType type){
     if(m_table.find(name) != m_table.end()){
-        return m_table[name];
+        return &m_table[name];
     }else if(m_parent != nullptr && type == SymbolSearchType::RECURSIVE_SCOPE){
         return m_parent->find(name);
-    }else{
-        throw std::runtime_error("~Error~ Can't find symbol \'" + name + "\'.");
     }
+
+    return nullptr;
 }
 
 std::shared_ptr<SymbolTable> SymbolTable::getParent(){
@@ -49,7 +49,7 @@ void ScopeManager::popScope(){
 void ScopeManager::pushData(const std::string &name, const Data &value){
     m_currentScope->push(name, value);
 }
-Data ScopeManager::findData(const std::string &name, SymbolSearchType type){
+Data *ScopeManager::findData(const std::string &name, SymbolSearchType type){
     return m_currentScope->find(name, type);
 }
 
@@ -62,7 +62,7 @@ void ScopeManager::debug_outScopes() {
         current = current->getParent();
     }
 
-    std::cout << "Scope Tree\n->\n";
+    std::cout << "\nScope Tree\n->\n";
     int depth = 0;
     while (!scopeStack.empty()) {
         current = scopeStack.top();

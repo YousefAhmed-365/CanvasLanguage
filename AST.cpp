@@ -62,6 +62,22 @@ NodeInfo &AbstractList::eval(ScopeManager &scope){
     return this->info;
 }
 
+/* BlockStatement Struct */
+BlockStatement::BlockStatement(){
+    this->info.type = NodeType::BLC_STM;
+    this->m_value = "_BLOCK";
+}
+
+NodeInfo &BlockStatement::eval(ScopeManager &scope){
+    scope.pushScope();
+    for(auto &e : m_childrens){
+        this->info = e->eval(scope);
+    };
+    scope.popScope();
+
+    return this->info;
+}
+
 /* IfStatement Struct */
 IfStatement::IfStatement(std::shared_ptr<AbstractNode> condition){
     this->info.type = NodeType::CON_STM;
@@ -82,7 +98,10 @@ WhileStatement::WhileStatement(std::shared_ptr<AbstractNode> condition){
 }
 
 NodeInfo &WhileStatement::eval(ScopeManager &scope){
-
+    while(!isVariantEmptyOrNull(identifierToLiteral(m_childrens[0]->eval(scope), scope).data)){
+        m_childrens[1]->eval(scope);
+    }
+    
     return this->info;
 }
 
@@ -94,7 +113,16 @@ RepeatStatement::RepeatStatement(std::shared_ptr<AbstractNode> count){
 }
 
 NodeInfo &RepeatStatement::eval(ScopeManager &scope){
-
+    NodeInfo expression = identifierToLiteral(m_childrens[0]->eval(scope), scope);
+    if(expression.type == NodeType::NUM_LIT && variantAsNum(expression.data) >= 0){
+        unsigned int count = variantAsNum(expression.data);
+        for(unsigned int i = 0; i < count; ++i){
+            m_childrens[1]->eval(scope);
+        }
+    }else{
+        throw ParserException("~Error~ Invalid arguments for 'repeat'");
+    }
+    
     return this->info;
 }
 
@@ -109,15 +137,17 @@ BinaryExpression::BinaryExpression(std::string &oprStr, std::shared_ptr<Abstract
 }
 
 NodeInfo &BinaryExpression::eval(ScopeManager &scope){
-    NodeInfo &leftNode = m_childrens[0]->eval(scope);
-    NodeInfo &rightNode = m_childrens[1]->eval(scope);
+    NodeInfo leftNode = identifierToLiteral(m_childrens[0]->eval(scope), scope);
+    NodeInfo rightNode = identifierToLiteral(m_childrens[1]->eval(scope), scope);
 
     switch (this->type){
         case OperatorType::OPR_ADD:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = variantAsNum(leftNode.data) + variantAsNum(rightNode.data);
+                this->info.type = NodeType::NUM_LIT;
             }else if(leftNode.type == NodeType::STR_LIT && rightNode.type == NodeType::STR_LIT){
                 this->info.data = '\"' + stripStr(std::get<std::string>(leftNode.data)) + stripStr(std::get<std::string>(rightNode.data)) + '\"';
+                this->info.type = NodeType::STR_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -125,6 +155,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::OPR_SUB:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = variantAsNum(leftNode.data) - variantAsNum(rightNode.data);
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -132,6 +163,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::OPR_MUL:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = variantAsNum(leftNode.data) * variantAsNum(rightNode.data);
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -139,6 +171,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::OPR_DIV:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = variantAsNum(leftNode.data) / variantAsNum(rightNode.data);
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -146,6 +179,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::OPR_MOD:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = static_cast<int>(variantAsNum(leftNode.data)) % static_cast<int>(variantAsNum(rightNode.data));
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -153,6 +187,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::OPR_EXP:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = std::pow(variantAsNum(leftNode.data), variantAsNum(rightNode.data));
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -160,6 +195,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::LOG_EQL:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = variantAsNum(leftNode.data) == variantAsNum(rightNode.data);
+                this->info.type = NodeType::NUM_LIT;
             }else if(leftNode.type == NodeType::STR_LIT && rightNode.type == NodeType::STR_LIT){
                 this->info.data = std::get<std::string>(leftNode.data) == std::get<std::string>(rightNode.data);
             }else{
@@ -169,6 +205,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::LOG_NEQ:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = variantAsNum(leftNode.data) != variantAsNum(rightNode.data);
+                this->info.type = NodeType::NUM_LIT;
             }else if(leftNode.type == NodeType::STR_LIT && rightNode.type == NodeType::STR_LIT){
                 this->info.data = std::get<std::string>(leftNode.data) != std::get<std::string>(rightNode.data);
             }else{
@@ -178,6 +215,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::LOG_GEQ:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = leftNode.data >= rightNode.data;
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -185,6 +223,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::LOG_GRE:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = leftNode.data > rightNode.data;
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -192,6 +231,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::LOG_LEQ:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = leftNode.data <= rightNode.data;
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -199,6 +239,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::LOG_LES:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = leftNode.data < rightNode.data;
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -206,6 +247,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::LOG_AND:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = variantAsNum(leftNode.data) && variantAsNum(rightNode.data);
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -213,6 +255,7 @@ NodeInfo &BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::LOG_LOR:
             if(leftNode.type == NodeType::NUM_LIT && rightNode.type == NodeType::NUM_LIT){
                 this->info.data = variantAsNum(leftNode.data) || variantAsNum(rightNode.data);
+                this->info.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -277,11 +320,12 @@ NodeInfo &Literal::eval(ScopeManager &scope){
 /* Identifier Struct */
 Identifier::Identifier(std::string &name){
     this->info.type = NodeType::IDN;
+    this->info.data = name;
     this->m_value = name;
 }
 
 NodeInfo &Identifier::eval(ScopeManager &scope){
-
+    
     return this->info;
 }
 
@@ -317,6 +361,20 @@ CallStatement::CallStatement(std::string &name, std::shared_ptr<AbstractNode> ar
 }
 
 NodeInfo &CallStatement::eval(ScopeManager &scope){
+    std::string &identifier = std::get<std::string>(m_childrens[0]->eval(scope).data);
+    std::vector<NodeInfo> argsList;
+    argsList.reserve(m_childrens[1]->getChildrens().size());
+
+    for(auto &e : m_childrens[1]->getChildrens()){
+        argsList.emplace_back(identifierToLiteral(e->eval(scope), scope));
+    }
+    
+    if(identifier == "print"){
+        for(auto &e : argsList){
+            std::string toBePrinted = variantAsStr(e.data);
+            std::cout << sanitizeStr(toBePrinted) << std::endl;
+        }
+    }
 
     return this->info;
 }
@@ -330,6 +388,47 @@ AssignementStatment::AssignementStatment(std::string &oprStr, std::string &ident
 }
 
 NodeInfo &AssignementStatment::eval(ScopeManager &scope){
+    std::string &identifier = std::get<std::string>(m_childrens[0]->eval(scope).data);
+    NodeInfo expression = identifierToLiteral(m_childrens[1]->eval(scope), scope);
 
+    Data *data = scope.findData(identifier);
+
+    if(data == nullptr){
+        if(this->m_value == "="){
+            scope.pushData(identifier, expression.data);
+        }else{
+            throw ParserException("~Error~ Undefined identifier \'" + identifier + "\'.");
+        }
+    }else{
+        if(this->m_value == "="){
+            *data = expression.data;
+        }
+    }
+    
     return this->info;
+}
+
+// Helper Functions
+NodeInfo identifierToLiteral(NodeInfo &info, ScopeManager &scope){
+    Data *data;
+    switch(info.type){
+    case NodeType::IDN:
+        {
+            if(Data *dataPtr = scope.findData(std::get<std::string>(info.data))){
+                data = dataPtr;
+            }else{
+                throw ParserException("~Error~ Undefined identifier \'" + std::get<std::string>(info.data) + "\'.");
+            }
+        }
+        break;
+    default:
+        return info;
+        break;
+    }
+
+    if(std::holds_alternative<int32_t>(*data) || std::holds_alternative<float>(*data)){
+        return NodeInfo(NodeType::NUM_LIT, *data);
+    }
+
+    return NodeInfo(NodeType::STR_LIT, *data);
 }

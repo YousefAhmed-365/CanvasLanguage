@@ -19,22 +19,23 @@ int executeFile(const std::string filename){
     }
 
     Interpreter mainInterpreter;
-    std::string code, readLine;
+    
+    /*
+        The code is enclosed in "{}" because the parser expects a code-block as the first node of the root.
+    */
+    std::string code = "{"; 
+    std::string readLine;
 
     while(std::getline(file, readLine)){
         if (!readLine.empty() && readLine != "\n" && readLine[0] != '#') {
-            code += readLine + "\n";
+            code.append(readLine + "\n");
         }
     } file.close();
+    code.append("}");
 
-    auto startTime = std::chrono::high_resolution_clock::now();
     RET_CODE exitCode = mainInterpreter.execute(code, true);
-    auto endTime = std::chrono::high_resolution_clock::now();
-    auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     
-    if(exitCode == RET_CODE::OK){
-        std::cout << "Exited in " << executionTime.count() << "ms" << std::endl;
-    }else{
+    if(exitCode == RET_CODE::ERR){
         std::cout << "Exited with errors." << std::endl;
     }
 

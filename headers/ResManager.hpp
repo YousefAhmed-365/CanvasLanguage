@@ -25,7 +25,7 @@ class SymbolTable{
 
         // Functions
         void push(const std::string& name, const Data &value);
-        Data find(const std::string& name, SymbolSearchType type = SymbolSearchType::RECURSIVE_SCOPE);
+        Data *find(const std::string& name, SymbolSearchType type = SymbolSearchType::RECURSIVE_SCOPE);
 
         std::shared_ptr<SymbolTable> getParent();
         std::unordered_map<std::string, Data> &getData();
@@ -44,7 +44,7 @@ class ScopeManager{
         
         // Functions
         void pushData(const std::string &name, const Data &value);
-        Data findData(const std::string &name, SymbolSearchType type = SymbolSearchType::RECURSIVE_SCOPE);
+        Data *findData(const std::string &name, SymbolSearchType type = SymbolSearchType::RECURSIVE_SCOPE);
 
         void pushScope();
         void popScope();

@@ -86,23 +86,43 @@ bool g_util::isIdentifier(std::string &str){
 }
 
 float variantAsNum(Data &data){
-    if(std::holds_alternative<int32_t>(data)){
-        return std::get<int32_t>(data);
+    if (const auto* intPtr = std::get_if<int32_t>(&data)) {
+        return *intPtr;
     }
-
+    
     return std::get<float>(data);
 }
 
-std::string variantAsStr(Data &data){
-    if(std::holds_alternative<int32_t>(data)){
-        return std::to_string(std::get<int32_t>(data));
-    }else if(std::holds_alternative<float>(data)){
-        return std::to_string(std::get<float>(data));
+std::string variantAsStr(Data &data) {
+    if(const auto* intPtr = std::get_if<int32_t>(&data)){
+        return std::to_string(*intPtr);
+    }else if(const auto* floatPtr = std::get_if<float>(&data)){
+        return std::to_string(*floatPtr);
     }
 
     return std::get<std::string>(data);
 }
 
+bool isVariantEmptyOrNull(Data data){
+    if(const auto *intPtr = std::get_if<int32_t>(&data)){
+        return *intPtr == 0;
+    }else if(const auto *floatPtr = std::get_if<float>(&data)){
+        return *floatPtr == 0;
+    }else if(const auto *strPtr = std::get_if<std::string>(&data)){
+        return strPtr->empty() || *strPtr == "\"\"";
+    }
+    
+    return true;
+}
+
 std::string stripStr(std::string &str){
     return str.length() < 2 ? str : str.substr(1, str.size() - 2);
+}
+
+std::string sanitizeStr(std::string &str){
+    if(str.length() >= 2 && (str[0] == '\"' && str[str.size()-1] == '\"')){
+        return str.substr(1, str.size() - 2);
+    }
+
+    return str;
 }
