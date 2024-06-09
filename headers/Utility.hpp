@@ -9,8 +9,7 @@
 #include "Regex.hpp"
 #include "ResManager.hpp"
 
-// Interpreter Variables
-using Data = std::variant<std::int32_t, float, std::string>;
+using Data = std::variant<void*, std::int32_t, float, std::string>;
 
 // Interpreter Utililty
 enum class RET_CODE{

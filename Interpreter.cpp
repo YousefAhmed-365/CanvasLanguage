@@ -33,7 +33,7 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
             treeRoot->debug_outNodes(0);
         }
         
-        NodeInfo &rootResult = treeRoot->eval(m_scopeManager);
+        NodeInfo rootResult = treeRoot->eval(m_scopeManager);
         auto executionEndTime = std::chrono::high_resolution_clock::now();
         auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(executionEndTime - compileStartTime);
 
@@ -259,7 +259,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
         result = std::make_shared<DefStatement>();
         result->attach(std::make_shared<Identifier>(DelayedConsume(TokenType::IDN)->value));
         result->attach(parseTupleStatement());
-        result->attach(parseBlockStatement());
+        result->attach(parseBlockStatement(true));
     }else if(m_currToken->value == "ret"){
         consume(TokenType::KEY);
         result = std::make_shared<RetStatement>(parseExpression());

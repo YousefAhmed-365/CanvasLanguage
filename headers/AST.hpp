@@ -52,7 +52,7 @@ class AbstractNode{
         virtual ~AbstractNode() = default;
 
         // Functions
-        virtual NodeInfo &eval(ScopeManager &scope) = 0;
+        virtual NodeInfo eval(ScopeManager &scope) = 0;
         void attach(std::shared_ptr<AbstractNode> node);
         
         // Helper Functions
@@ -68,21 +68,21 @@ struct AbstractList : public AbstractNode{
     AbstractList();
     ~AbstractList() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct BlockStatement : public AbstractNode{
     BlockStatement();
     ~BlockStatement() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct PostBlockStatement : public AbstractNode{
     PostBlockStatement();
     ~PostBlockStatement() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct BinaryExpression : public AbstractNode{
@@ -91,7 +91,7 @@ struct BinaryExpression : public AbstractNode{
     BinaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left, std::shared_ptr<AbstractNode> right);
     ~BinaryExpression() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct UnaryExpression : public AbstractNode{
@@ -100,80 +100,80 @@ struct UnaryExpression : public AbstractNode{
     UnaryExpression(std::string &oprStr, std::shared_ptr<AbstractNode> left);
     ~UnaryExpression() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct IfStatement : public AbstractNode{
     IfStatement(std::shared_ptr<AbstractNode> condition);
     ~IfStatement() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct WhileStatement : public AbstractNode{
     WhileStatement(std::shared_ptr<AbstractNode> condition);
     ~WhileStatement() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct RepeatStatement : public AbstractNode{
     RepeatStatement(std::shared_ptr<AbstractNode> count);
     ~RepeatStatement() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct Literal : public AbstractNode{
     Literal(Data &value);
     ~Literal() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct Identifier : public AbstractNode{
     Identifier(std::string &name);
     ~Identifier() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct DefStatement : public AbstractNode{
     DefStatement();
     ~DefStatement() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct RetStatement : public AbstractNode{
     RetStatement(std::shared_ptr<AbstractNode> expression);
     ~RetStatement() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct FlowPoint : public AbstractNode{
     FlowPoint(unsigned int flowType);
     ~FlowPoint() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct CallStatement : public AbstractNode{
     CallStatement(std::string &name, std::shared_ptr<AbstractNode> argsList);
     ~CallStatement() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 struct AssignementStatment : public AbstractNode{    
     AssignementStatment(std::string &oprStr, std::string &identifier, std::shared_ptr<AbstractNode> expression);
     ~AssignementStatment() = default;
 
-    NodeInfo &eval(ScopeManager &scope) override;
+    NodeInfo eval(ScopeManager &scope) override;
 };
 
 // Helper Functions
-NodeInfo identifierToLiteral(NodeInfo &info, ScopeManager &scope);
+NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope);
 
 #endif

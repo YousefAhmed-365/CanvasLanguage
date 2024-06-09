@@ -2,8 +2,9 @@
 #define RES_MANAGER_HPP
 
 #include "CommonLibs.hpp"
+#include <stack>
 
-using Data = std::variant<std::int32_t, float, std::string>;
+using Data = std::variant<void*, std::int32_t, float, std::string>;
 
 enum SymbolSearchType{
     NONE,
@@ -36,8 +37,11 @@ class ScopeManager{
         // Variables
         std::shared_ptr<SymbolTable> m_globalScope;
         std::shared_ptr<SymbolTable> m_currentScope;
+
     public:
         // Variables
+        std::stack<Data> globalStack;
+        
         // Constructor & Destructor
         ScopeManager();
         ~ScopeManager() = default;
