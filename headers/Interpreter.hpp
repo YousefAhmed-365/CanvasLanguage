@@ -35,10 +35,9 @@ class TreeParser{
 
         // Functions
         std::shared_ptr<AbstractNode> parse(std::vector<Token> &tokenList);
-
         std::shared_ptr<AbstractNode> parseStatementsList();
         std::shared_ptr<AbstractNode> parseStatement();
-        std::shared_ptr<AbstractNode> parseBlockStatement();
+        std::shared_ptr<AbstractNode> parseBlockStatement(bool isPost = false);
         std::shared_ptr<AbstractNode> parseTupleStatement();
         std::shared_ptr<AbstractNode> parseExpression();
         std::shared_ptr<AbstractNode> parseLogicalTerm();

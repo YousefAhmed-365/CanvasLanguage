@@ -171,9 +171,16 @@ std::shared_ptr<AbstractNode> TreeParser::parse(std::vector<Token> &tokenList){
     return parseBlockStatement();
 }
 
-std::shared_ptr<AbstractNode> TreeParser::parseBlockStatement(){
+std::shared_ptr<AbstractNode> TreeParser::parseBlockStatement(bool isPost){
     consume("{");
-    std::shared_ptr<AbstractNode> statementsList = std::make_shared<BlockStatement>();
+    std::shared_ptr<AbstractNode> statementsList;
+    
+    if(isPost){
+        statementsList = std::make_shared<PostBlockStatement>();
+    }else{
+        statementsList = std::make_shared<BlockStatement>();
+    }
+
     std::shared_ptr<AbstractNode> result;
 
     while(!isEnd()){
@@ -217,7 +224,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
         consume("(");
         result = std::make_shared<IfStatement>(parseExpression());
         consume(")");
-        result->attach(parseBlockStatement());
+        result->attach(parseBlockStatement(true));
 
         std::shared_ptr<AbstractNode> alts = std::make_shared<AbstractList>();
         while(m_currToken->value == "elif"){
@@ -226,7 +233,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
             alts->attach(std::make_shared<IfStatement>(parseExpression()));
             alts->getChildrens().back()->setValue("_ELIF");
             consume(")");
-            alts->getChildrens().back()->attach(parseBlockStatement());
+            alts->getChildrens().back()->attach(parseBlockStatement(true));
         }
         result->attach(alts);
 
@@ -240,7 +247,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
         consume("(");
         result = std::make_shared<WhileStatement>(parseExpression());
         consume(")");
-        result->attach(parseBlockStatement());
+        result->attach(parseBlockStatement(true));
     }else if(m_currToken->value == "repeat"){
         consume(TokenType::KEY);
         consume("(");
@@ -256,6 +263,14 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
     }else if(m_currToken->value == "ret"){
         consume(TokenType::KEY);
         result = std::make_shared<RetStatement>(parseExpression());
+        consume(";");
+    }else if(m_currToken->value == "break"){
+        consume(TokenType::KEY);
+        result = std::make_shared<FlowPoint>(0);
+        consume(";");
+    }else if(m_currToken->value == "continue"){
+        consume(TokenType::KEY);
+        result = std::make_shared<FlowPoint>(1);
         consume(";");
     }else{
         if(m_currToken->value == ";"){

@@ -13,6 +13,8 @@ enum class NodeType{
     BIN_EXP,
     UNR_EXP,
     CON_STM,
+    BRK_STM,
+    IFC_STM,
     WHL_STM,
     REP_STM,
     DEF_STM,
@@ -72,6 +74,13 @@ struct AbstractList : public AbstractNode{
 struct BlockStatement : public AbstractNode{
     BlockStatement();
     ~BlockStatement() = default;
+
+    NodeInfo &eval(ScopeManager &scope) override;
+};
+
+struct PostBlockStatement : public AbstractNode{
+    PostBlockStatement();
+    ~PostBlockStatement() = default;
 
     NodeInfo &eval(ScopeManager &scope) override;
 };
@@ -139,6 +148,13 @@ struct DefStatement : public AbstractNode{
 struct RetStatement : public AbstractNode{
     RetStatement(std::shared_ptr<AbstractNode> expression);
     ~RetStatement() = default;
+
+    NodeInfo &eval(ScopeManager &scope) override;
+};
+
+struct FlowPoint : public AbstractNode{
+    FlowPoint(unsigned int flowType);
+    ~FlowPoint() = default;
 
     NodeInfo &eval(ScopeManager &scope) override;
 };

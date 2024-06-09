@@ -71,22 +71,55 @@ BlockStatement::BlockStatement(){
 NodeInfo &BlockStatement::eval(ScopeManager &scope){
     scope.pushScope();
     for(auto &e : m_childrens){
-        this->info = e->eval(scope);
+        e->eval(scope);
     };
     scope.popScope();
 
     return this->info;
 }
 
+/* PostBlockStatement Struct */
+PostBlockStatement::PostBlockStatement(){
+    this->info.type = NodeType::BLC_STM;
+    this->m_value = "_BLOCK_POST";
+}
+
+NodeInfo &PostBlockStatement::eval(ScopeManager &scope){
+    for(auto &e : m_childrens){
+        NodeInfo &_info = e->eval(scope);
+        if(_info.type == NodeType::BRK_STM || _info.type == NodeType::CON_STM){
+            return _info;
+        }
+    };
+
+    return this->info;
+}
+
 /* IfStatement Struct */
 IfStatement::IfStatement(std::shared_ptr<AbstractNode> condition){
-    this->info.type = NodeType::CON_STM;
+    this->info.type = NodeType::IFC_STM;
     this->m_value = "_IF";
     attach(condition);
 }
 
 NodeInfo &IfStatement::eval(ScopeManager &scope){
+    if(!isVariantEmptyOrNull(identifierToLiteral(m_childrens[0]->eval(scope), scope).data)){
+        return m_childrens[1]->eval(scope);
+    }else{
+        bool foundTruthy = false;
+        for(auto &e : m_childrens[2]->getChildrens()){
+            if(!isVariantEmptyOrNull(identifierToLiteral(e->getChild(0)->eval(scope), scope).data)){
+                foundTruthy = true;
+                return e->eval(scope);
+                break;
+            }
+        }
 
+        if(!foundTruthy && m_childrens.size() == 4){
+            return m_childrens[3]->eval(scope);
+        }
+    }
+    
     return this->info;
 }
 
@@ -98,9 +131,16 @@ WhileStatement::WhileStatement(std::shared_ptr<AbstractNode> condition){
 }
 
 NodeInfo &WhileStatement::eval(ScopeManager &scope){
+    scope.pushScope();
     while(!isVariantEmptyOrNull(identifierToLiteral(m_childrens[0]->eval(scope), scope).data)){
-        m_childrens[1]->eval(scope);
+        NodeInfo &_info = m_childrens[1]->eval(scope);
+        if(_info.type == NodeType::BRK_STM){
+            break;
+        }else if(_info.type == NodeType::CON_STM){
+            continue;
+        }
     }
+    scope.popScope();
     
     return this->info;
 }
@@ -117,7 +157,12 @@ NodeInfo &RepeatStatement::eval(ScopeManager &scope){
     if(expression.type == NodeType::NUM_LIT && variantAsNum(expression.data) >= 0){
         unsigned int count = variantAsNum(expression.data);
         for(unsigned int i = 0; i < count; ++i){
-            m_childrens[1]->eval(scope);
+            NodeInfo &_info = m_childrens[1]->eval(scope);
+            if(_info.type == NodeType::BRK_STM){
+                break;
+            }else if(_info.type == NodeType::CON_STM){
+                continue;
+            }
         }
     }else{
         throw ParserException("~Error~ Invalid arguments for 'repeat'");
@@ -348,6 +393,27 @@ RetStatement::RetStatement(std::shared_ptr<AbstractNode> expression){
 }
 
 NodeInfo &RetStatement::eval(ScopeManager &scope){
+
+    return this->info;
+}
+
+/* FlowPoint Struct */
+FlowPoint::FlowPoint(unsigned int flowType){
+    switch (flowType){
+    case 0:
+        this->info.type = NodeType::BRK_STM;
+        this->m_value = "_BREAK";
+        break;
+    case 1:
+        this->info.type = NodeType::CON_STM;
+        this->m_value = "_CONTINUE";
+        break;
+    default:
+        break;
+    }
+}
+
+NodeInfo &FlowPoint::eval(ScopeManager &scope){
 
     return this->info;
 }

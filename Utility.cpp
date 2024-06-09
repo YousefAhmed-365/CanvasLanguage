@@ -9,7 +9,9 @@ bool g_util::isKeyword(std::string &str){
         str == "while"  ||
         str == "repeat" ||
         str == "def"    ||
-        str == "ret"    
+        str == "ret"    ||
+        str == "break"  ||
+        str == "continue"    
     );
 }
 
