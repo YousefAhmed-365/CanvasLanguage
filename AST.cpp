@@ -307,12 +307,12 @@ UnaryExpression::UnaryExpression(std::string &oprStr, std::shared_ptr<AbstractNo
 }
 
 NodeInfo UnaryExpression::eval(ScopeManager &scope){
-    NodeInfo leftNode = m_childrens[0]->eval(scope);
+    NodeInfo leftNode = identifierToLiteral(m_childrens[0]->eval(scope), scope);
 
     switch (this->type){
     case OperatorType::LOG_NOT:
         if(leftNode.type == NodeType::NUM_LIT){
-                this->info.data = !variantAsNum(leftNode.data);
+                leftNode.data = !variantAsNum(leftNode.data);
         }else{
             throw ParserException("~Error~ Invalid Unary Operation \'" + m_value + variantAsStr(leftNode.data) + "\' Incompatible Type.");
         }
@@ -320,18 +320,31 @@ NodeInfo UnaryExpression::eval(ScopeManager &scope){
 
     case OperatorType::OPR_SUB:
         if(leftNode.type == NodeType::NUM_LIT){
-            this->info.data = -variantAsNum(leftNode.data);
+            leftNode.data = -variantAsNum(leftNode.data);
         }else{
             throw ParserException("~Error~ Invalid Unary Operation \'" + m_value + variantAsStr(leftNode.data) + "\' Incompatible Type.");
         }
         break;
-    
+
+    case OperatorType::OPR_INC:
+        if(leftNode.type == NodeType::NUM_LIT){
+            leftNode.data = variantAsNum(leftNode.data) + 1;
+        }else{
+            throw ParserException("~Error~ Invalid Unary Operation \'" + m_value + variantAsStr(leftNode.data) + "\' Incompatible Type.");
+        }
+        break;
+    case OperatorType::OPR_DEC:
+        if(leftNode.type == NodeType::NUM_LIT){
+            leftNode.data = variantAsNum(leftNode.data) - 1;
+        }else{
+            throw ParserException("~Error~ Invalid Unary Operation \'" + m_value + variantAsStr(leftNode.data) + "\' Incompatible Type.");
+        }
+        break;
     default:
         break;
     }
 
-    this->info.type = leftNode.type;
-    return this->info;
+    return leftNode;
 }
 
 /* Literal Struct */
@@ -449,6 +462,8 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                 std::string toBePrinted = variantAsStr(e.data);
                 std::cout << sanitizeStr(toBePrinted) << std::endl;
             }
+        }else{
+            throw ParserException("Error Undefined Identifier \'" + identifier + "\'");
         }
     }
 
@@ -458,6 +473,7 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
 /* AssignementStatment Struct */
 AssignementStatment::AssignementStatment(std::string &oprStr, std::string &identifier, std::shared_ptr<AbstractNode> expression){
     this->info.type = NodeType::ASG_STM;
+    this->type = operatorStrToken.at(oprStr);
     this->m_value = oprStr;
     attach(std::make_shared<Identifier>(identifier));
     attach(expression);
@@ -476,12 +492,61 @@ NodeInfo AssignementStatment::eval(ScopeManager &scope){
             throw ParserException("~Error~ Undefined identifier \'" + identifier + "\'.");
         }
     }else{
-        if(this->m_value == "="){
+        switch (this->type){
+        case OperatorType::ASG_EQL:
             *data = expression.data;
+            break;
+        case OperatorType::ASG_ADD:
+            if(expression.type == NodeType::NUM_LIT && (std::holds_alternative<float>(*data) || std::holds_alternative<int32_t>(*data))){
+                *data = variantAsNum(*data) + variantAsNum(expression.data);
+            }else if(expression.type == NodeType::STR_LIT && (std::holds_alternative<std::string>(*data))){
+                *data = '\"' + stripStr(std::get<std::string>(*data)) + stripStr(std::get<std::string>(expression.data)) + '\"';
+            }else{
+                throw ParserException("~Error~ Invalid Assignement \'" + this->m_value + "\' for Identifier \'" + identifier + "\'.");
+            }
+            break;
+        case OperatorType::ASG_SUB:
+            if(expression.type == NodeType::NUM_LIT && (std::holds_alternative<float>(*data) || std::holds_alternative<int32_t>(*data))){
+                *data = variantAsNum(*data) - variantAsNum(expression.data);
+            }else{
+                throw ParserException("~Error~ Invalid Assignement \'" + this->m_value + "\' for Identifier \'" + identifier + "\'.");
+            }
+            break;
+        case OperatorType::ASG_MUL:
+            if(expression.type == NodeType::NUM_LIT && (std::holds_alternative<float>(*data) || std::holds_alternative<int32_t>(*data))){
+                *data = variantAsNum(*data) * variantAsNum(expression.data);
+            }else{
+                throw ParserException("~Error~ Invalid Assignement \'" + this->m_value + "\' for Identifier \'" + identifier + "\'.");
+            }
+            break;
+        case OperatorType::ASG_DIV:
+            if(expression.type == NodeType::NUM_LIT && (std::holds_alternative<float>(*data) || std::holds_alternative<int32_t>(*data))){
+                *data = variantAsNum(*data) / variantAsNum(expression.data);
+            }else{
+                throw ParserException("~Error~ Invalid Assignement \'" + this->m_value + "\' for Identifier \'" + identifier + "\'.");
+            }
+            break;
+        case OperatorType::ASG_MOD:
+            if(expression.type == NodeType::NUM_LIT && (std::holds_alternative<float>(*data) || std::holds_alternative<int32_t>(*data))){
+                *data = static_cast<int>(variantAsNum(*data)) % static_cast<int>(variantAsNum(expression.data));
+            }else{
+                throw ParserException("~Error~ Invalid Assignement \'" + this->m_value + "\' for Identifier \'" + identifier + "\'.");
+            }
+            break;
+        case OperatorType::ASG_EXP:
+            if(expression.type == NodeType::NUM_LIT && (std::holds_alternative<float>(*data) || std::holds_alternative<int32_t>(*data))){
+                *data = std::pow(variantAsNum(*data), variantAsNum(expression.data));
+            }else{
+                throw ParserException("~Error~ Invalid Assignement \'" + this->m_value + "\' for Identifier \'" + identifier + "\'.");
+            }
+            break;
+        
+        default:
+            break;
         }
     }
     
-    return this->info;
+    return expression;
 }
 
 // Helper Functions

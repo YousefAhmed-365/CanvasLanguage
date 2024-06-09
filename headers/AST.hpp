@@ -166,7 +166,9 @@ struct CallStatement : public AbstractNode{
     NodeInfo eval(ScopeManager &scope) override;
 };
 
-struct AssignementStatment : public AbstractNode{    
+struct AssignementStatment : public AbstractNode{
+    OperatorType type;
+
     AssignementStatment(std::string &oprStr, std::string &identifier, std::shared_ptr<AbstractNode> expression);
     ~AssignementStatment() = default;
 
