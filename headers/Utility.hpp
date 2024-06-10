@@ -128,6 +128,6 @@ std::string variantAsStr(Data &data);
 bool isVariantEmptyOrNull(Data data);
 
 std::string stripStr(std::string &str);
-std::string sanitizeStr(std::string &str);
+std::string sanitizeStr(std::string str);
 
 #endif

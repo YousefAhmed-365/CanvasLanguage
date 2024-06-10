@@ -125,7 +125,7 @@ std::string stripStr(std::string &str){
     return str.length() < 2 ? str : str.substr(1, str.size() - 2);
 }
 
-std::string sanitizeStr(std::string &str){
+std::string sanitizeStr(std::string str){
     if(str.length() >= 2 && (str[0] == '\"' && str[str.size()-1] == '\"')){
         return str.substr(1, str.size() - 2);
     }

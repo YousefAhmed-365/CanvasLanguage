@@ -457,10 +457,47 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
             throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
         }
     }else{
+        // Handling Predefined Functions.
         if(identifier == "print"){
-            for(auto &e : argsList){
-                std::string toBePrinted = variantAsStr(e.data);
-                std::cout << sanitizeStr(toBePrinted) << std::endl;
+            for (auto &e : argsList) {
+                std::string _str = sanitizeStr(variantAsStr(e.data));
+                for (size_t i = 0; i < _str.length(); ++i) {
+                    if(_str[i] == '\\' && i + 1 < _str.length()) {
+                        if (_str[i + 1] == 'n') {
+                            std::cout << '\n';
+                            ++i;
+                        } else if (_str[i + 1] == '\\') {
+                            std::cout << '\\';
+                            ++i;
+                        } else {
+                            std::cout << '\\' << _str[i + 1];
+                            ++i;
+                        }
+                    }else{
+                        std::cout << _str[i];
+                    }
+                }
+            } std::cout << std::endl;
+        }else if(identifier == "printf"){
+            if(!argsList.empty()){
+                std::string _formatStr = sanitizeStr(variantAsStr(argsList[0].data));
+
+                size_t argIndex = 1;
+                for(size_t i = 0; i < _formatStr.length(); ++i){
+                    if(_formatStr[i] == '%' && i + 1 < _formatStr.length() && _formatStr[i + 1] == 's'){
+                        if(argIndex < argsList.size()){
+                            std::cout << sanitizeStr(variantAsStr(argsList[argIndex].data));
+                            ++argIndex;
+                        }else{
+                            std::cout << "%s";
+                        }
+                        ++i;
+                    }else{
+                        std::cout << _formatStr[i];
+                    }
+                }
+            }else{
+                throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
             }
         }else if(identifier == "input"){
             for(auto &e : argsList){
