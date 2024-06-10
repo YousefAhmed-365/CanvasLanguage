@@ -138,6 +138,10 @@ NodeInfo WhileStatement::eval(ScopeManager &scope){
     scope.pushScope();
     while(!isVariantEmptyOrNull(identifierToLiteral(m_childrens[0]->eval(scope), scope).data)){
         NodeInfo _info = m_childrens[1]->eval(scope);
+        if(scope.isReturning){
+            return _info;
+        }
+
         if(_info.type == NodeType::BRK_STM){
             break;
         }else if(_info.type == NodeType::CON_STM){
@@ -160,8 +164,13 @@ NodeInfo RepeatStatement::eval(ScopeManager &scope){
     NodeInfo expression = identifierToLiteral(m_childrens[0]->eval(scope), scope);
     if(expression.type == NodeType::NUM_LIT && variantAsNum(expression.data) >= 0){
         unsigned int count = variantAsNum(expression.data);
+        NodeInfo _info;
         for(unsigned int i = 0; i < count; ++i){
             NodeInfo _info = m_childrens[1]->eval(scope);
+            if(scope.isReturning){
+                return _info;
+            }
+            
             if(_info.type == NodeType::BRK_STM){
                 break;
             }else if(_info.type == NodeType::CON_STM){
@@ -499,7 +508,20 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                         }
                         ++i;
                     }else{
-                        std::cout << _formatStr[i];
+                        if(_formatStr[i] == '\\' && i + 1 < _formatStr.length()) {
+                            if (_formatStr[i + 1] == 'n') {
+                                std::cout << '\n';
+                                ++i;
+                            } else if (_formatStr[i + 1] == '\\') {
+                                std::cout << '\\';
+                                ++i;
+                            } else {
+                                std::cout << '\\' << _formatStr[i + 1];
+                                ++i;
+                            }
+                        }else{
+                            std::cout << _formatStr[i];
+                        }
                     }
                 }
             }else{
