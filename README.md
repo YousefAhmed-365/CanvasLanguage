@@ -19,11 +19,11 @@
 **Note**: As the project is still in an alpha state, the language or the interpreter are unoptimized and missing a lot of features as everything is still just a proof of concept. More optimizations, bug fixes & features will come with future alpha realases and the 1.0 release version which will rework the entire project from scratch with a better code structure. Documentations & Examples are still being worked on.
 
 - **Core features**:
-  - Mostly C-Style Syntax
+  - C-Style Syntax (Mostly)
   - Dynamic Types
-  - Conditional Statements `if/elif/else`
-  - Loops `while/repeat`
-  - Logical/Assignement/Mathematical Operators `==, >=, <=, >, <, !=, &&, ||, =, +=, -=, *=, /=, ^=, %=, +, -, *, /, ^, %, ++, --`
+  - Conditional Statements
+  - Loops
+  - Logical/Assignement/Mathematical Operators
   - User-Defined Functions & Variables
   - Basic Input & Output
   - Basic Type Conversion
@@ -38,7 +38,7 @@
 All documentations and examples can be found in the `DOCS` Directory.
 
 ### Basic Examples
-Note: The language doesn't have an official syntax highlighting extension of a linter yet. 
+Note: The language doesn't have an official syntax highlighting extension or a linter yet. 
 
 `hello_world.canvas`
 ```C
