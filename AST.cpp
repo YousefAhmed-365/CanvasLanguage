@@ -70,7 +70,11 @@ BlockStatement::BlockStatement(){
 NodeInfo BlockStatement::eval(ScopeManager &scope){
     scope.pushScope();
     for(auto &e : m_childrens){
-        e->eval(scope);
+        NodeInfo _info = e->eval(scope); 
+
+        if(scope.isReturning){
+            return _info;
+        }
     };
     scope.popScope();
 
@@ -86,7 +90,8 @@ PostBlockStatement::PostBlockStatement(){
 NodeInfo PostBlockStatement::eval(ScopeManager &scope){
     for(auto &e : m_childrens){
         NodeInfo _info = e->eval(scope);
-        if(_info.type == NodeType::BRK_STM || _info.type == NodeType::CON_STM || e->info.type == NodeType::RET_STM){
+
+        if(_info.type == NodeType::BRK_STM || _info.type == NodeType::CON_STM || scope.isReturning){
             return _info;
         }
     };
@@ -396,7 +401,7 @@ RetStatement::RetStatement(std::shared_ptr<AbstractNode> expression){
 }
 
 NodeInfo RetStatement::eval(ScopeManager &scope){
-
+    scope.isReturning = true;
     return identifierToLiteral(m_childrens[0]->eval(scope), scope);
 }
 

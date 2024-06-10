@@ -41,6 +41,7 @@ class ScopeManager{
     public:
         // Variables
         std::stack<Data> globalStack;
+        bool isReturning = false;
         
         // Constructor & Destructor
         ScopeManager();
