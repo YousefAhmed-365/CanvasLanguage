@@ -243,6 +243,7 @@ NodeInfo BinaryExpression::eval(ScopeManager &scope){
                 leftNode.data = variantAsNum(leftNode.data) != variantAsNum(rightNode.data);
             }else if(leftNode.type == NodeType::STR_LIT && rightNode.type == NodeType::STR_LIT){
                 leftNode.data = std::get<std::string>(leftNode.data) != std::get<std::string>(rightNode.data);
+                leftNode.type = NodeType::NUM_LIT;
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
             }
@@ -396,7 +397,7 @@ RetStatement::RetStatement(std::shared_ptr<AbstractNode> expression){
 
 NodeInfo RetStatement::eval(ScopeManager &scope){
 
-    return m_childrens[0]->eval(scope);
+    return identifierToLiteral(m_childrens[0]->eval(scope), scope);
 }
 
 /* FlowPoint Struct */
@@ -502,7 +503,7 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
         }else if(identifier == "input"){
             for(auto &e : argsList){
                 std::string toBePrinted = variantAsStr(e.data);
-                std::cout << sanitizeStr(toBePrinted) << std::endl;
+                std::cout << sanitizeStr(toBePrinted);
             }
             std::string inputStr;
             std::getline(std::cin, inputStr);
