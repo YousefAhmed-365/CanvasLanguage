@@ -15,7 +15,7 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
     if(str.empty())
         return RET_CODE::OK;
 
-    static const std::string DEFAULT_REGEX_PATTERN = "(\"[^\"]*\"|[@A-Za-z_]+)|([0-9]+)|(==|>=|>|<=|<|!=|!|&&|\\|\\|)|([\\+\\-\\*\\/\\%\\^]?\\=)|(\\+\\+|\\+|\\-\\-|\\-|\\*|\\/|\\%|\\^|\\.)|(\\(|\\)|\\{|\\}|\\[|\\]|;|:|\\,)";
+    static const std::string DEFAULT_REGEX_PATTERN = "(\"[^\"]*\"|[@A-Za-z_]+)|([0-9]+)(\\.[0-9]*)?|(==|>=|>|<=|<|!=|!|&&|\\|\\|)|([\\+\\-\\*\\/\\%\\^]?\\=)|(\\+\\+|\\+|\\-\\-|\\-|\\*|\\/|\\%|\\^|\\.)|(\\(|\\)|\\{|\\}|\\[|\\]|;|:|\\,)";
     std::vector<Token> tokens = lex(str, DEFAULT_REGEX_PATTERN);
     
     if(isDebug){

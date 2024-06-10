@@ -88,8 +88,10 @@ bool g_util::isIdentifier(std::string &str){
 }
 
 float variantAsNum(Data &data){
-    if (const auto* intPtr = std::get_if<int32_t>(&data)) {
+    if(const auto* intPtr = std::get_if<int32_t>(&data)) {
         return *intPtr;
+    }else if(const auto* voidPtr = std::get_if<void*>(&data)){
+        return reinterpret_cast<long>(voidPtr);
     }
     
     return std::get<float>(data);
@@ -100,6 +102,8 @@ std::string variantAsStr(Data &data) {
         return std::to_string(*intPtr);
     }else if(const auto* floatPtr = std::get_if<float>(&data)){
         return std::to_string(*floatPtr);
+    }else if(const auto* voidPtr = std::get_if<void*>(&data)){
+        return "(_FUN)" + std::to_string(reinterpret_cast<long>(voidPtr));
     }
 
     return std::get<std::string>(data);

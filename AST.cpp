@@ -462,6 +462,38 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                 std::string toBePrinted = variantAsStr(e.data);
                 std::cout << sanitizeStr(toBePrinted) << std::endl;
             }
+        }else if(identifier == "input"){
+            for(auto &e : argsList){
+                std::string toBePrinted = variantAsStr(e.data);
+                std::cout << sanitizeStr(toBePrinted) << std::endl;
+            }
+            std::string inputStr;
+            std::getline(std::cin, inputStr);
+
+            return NodeInfo(NodeType::STR_LIT, '\"' + inputStr + '\"');
+        }else if(identifier == "to_num"){
+            if(argsList.size() == 1){
+                if(argsList[0].type == NodeType::NUM_LIT){
+                    return argsList[0];
+                }else if(argsList[0].type == NodeType::STR_LIT){
+                    std::string _strContent = stripStr(std::get<std::string>(argsList[0].data));
+                    if(g_util::isNumLiteral(_strContent)){
+                        return NodeInfo(NodeType::NUM_LIT, std::stof(_strContent));
+                    }
+                }
+            }else{
+                throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
+            }
+        }else if(identifier == "to_str"){
+            if(argsList.size() == 1){
+                if(argsList[0].type == NodeType::STR_LIT){
+                    return argsList[0];
+                }else if(argsList[0].type == NodeType::NUM_LIT){
+                    return NodeInfo(NodeType::STR_LIT, '\"' + variantAsStr(argsList[0].data) + '\"');
+                }
+            }else{
+                throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
+            }
         }else{
             throw ParserException("Error Undefined Identifier \'" + identifier + "\'");
         }
@@ -567,7 +599,7 @@ NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope){
         break;
     }
 
-    if(std::holds_alternative<int32_t>(*data) || std::holds_alternative<float>(*data)){
+    if(std::holds_alternative<int32_t>(*data) || std::holds_alternative<float>(*data) || std::holds_alternative<void*>(*data)){
         return NodeInfo(NodeType::NUM_LIT, *data);
     }
 
