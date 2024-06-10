@@ -21,8 +21,9 @@
 - **Core features**:
   - Mostly C-Style Syntax
   - Dynamic Types
-  - Conditional Statements
-  - Loops
+  - Conditional Statements `if/elif/else`
+  - Loops `while/repeat`
+  - Logical/Assignement/Mathematical Operators `==, >=, <=, >, <, !=, &&, ||, =, +=, -=, *=, /=, ^=, %=, +, -, *, /, ^, %, ++, --`
   - User-Defined Functions & Variables
   - Basic Input & Output
   - Basic Type Conversion
@@ -36,8 +37,15 @@
 ## Documentations & Examples
 All documentations and examples can be found in the `DOCS` Directory.
 
-### Basic Example
+### Basic Examples
 Note: The language doesn't have an official syntax highlighting extension of a linter yet. 
+
+`hello_world.canvas`
+```C
+print("Hello, world!");
+```
+
+`cat_club.canvas`
 ``` C
 def ask_YesNo(question){
     _inp = input(question + "? (Yes/No): ");
