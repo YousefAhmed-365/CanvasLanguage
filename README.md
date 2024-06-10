@@ -19,6 +19,7 @@
 **Note**: As the project is still in an alpha state, the language or the interpreter are unoptimized and missing a lot of features as everything is still just a proof of concept. More optimizations, bug fixes & features will come with future alpha realases and the 1.0 release version which will rework the entire project from scratch with a better code structure. Documentations & Examples are still being worked on.
 
 - **Core features**:
+  - Mostly C-Style Syntax
   - Dynamic Types
   - Conditional Statements
   - Loops
@@ -33,17 +34,38 @@
 
 <a id="section_3"></a>
 ## Documentations & Examples
-All of the documentations and examples can be found in the **EXAMPLES** and **DOCS** dir of the source.
+All documentations and examples can be found in the `DOCS` Directory.
+
+### Basic Example
+Note: The language doesn't have an official syntax highlighting extension of a linter yet. 
+``` C
+def ask_YesNo(question){
+    _inp = input(question + "? (Yes/No): ");
+    while(_inp != "Yes" && _inp != "No"){
+        _inp = input(question + "? (Yes/No): ");
+    } 
+
+    ret _inp;
+}
+
+answer = ask_YesNo("Do you like cats");
+
+if(answer == "Yes"){
+    printf("%s? Welcome to the cat club!!!", answer);
+}else{
+    print("Go away!");
+}
+```
 
 <a id="section_4"></a>
 ## Usage
 ```bash
-canvas <flags> -c <file>
+canvas <flags> -e <file>
 ```
 
 #### example
 ```bash
-canvas -c code.canvas
+canvas -e code.canvas
 ```
 Use the -h or --help flag for more information:
 ```bash
