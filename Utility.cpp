@@ -40,7 +40,8 @@ bool g_util::isOperator(std::string &str){
         str == "&&" ||
         str == "||" ||
         str == "++" ||
-        str == "--"
+        str == "--" ||
+        str == "."
     );
 }
 
@@ -54,11 +55,15 @@ bool g_util::isSymbol(std::string &str){
         str == "]"  ||
         str == ":"  ||
         str == ";"  ||
-        str == "," 
+        str == ","
     );
 }
 
 bool g_util::isNumLiteral(std::string &str){
+    if(str == "."){
+        return false;
+    }
+
     bool isFloat = false;
     for(size_t i = 0; i < str.length(); i++){
         if(!std::isdigit(str[i])){

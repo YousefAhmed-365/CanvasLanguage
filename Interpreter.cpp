@@ -33,7 +33,7 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
             treeRoot->debug_outNodes(0);
         }
         
-        NodeInfo rootResult = treeRoot->eval(m_scopeManager);
+        //NodeInfo rootResult = treeRoot->eval(m_scopeManager);
         auto executionEndTime = std::chrono::high_resolution_clock::now();
         auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(executionEndTime - compileStartTime);
 
@@ -427,6 +427,17 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
         break;
     }
 
+    if(m_currToken->value == "."){
+        std::string &oprStr = DelayedConsume(TokenType::OPR)->value;
+        std::shared_ptr<AbstractNode> rightOperand = parseExpression();
+        
+        if(rightOperand->getValue() == "."){
+            throw ParserException("~Syntax Error~ Can't nest access operators.");
+        }
+
+        result = std::make_shared<BinaryExpression>(oprStr, result, rightOperand);
+    }
+
     for(auto it = unaryOperators.rbegin(); it != unaryOperators.rend(); ++it){
         result = std::make_shared<UnaryExpression>((*it)->value, result);
     }
@@ -435,5 +446,5 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
         return result;
     }
 
-    throw ParserException("~Error~ Invalid Token Exception: " + m_currToken->value);
+    throw ParserException("~Syntax Error~ Invalid Token  \'" + m_currToken->value + "\'.");
 }
