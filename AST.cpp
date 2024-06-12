@@ -559,8 +559,14 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
             }else{
                 throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
             }
+        }else if(identifier == "error"){
+            if(argsList.size() == 1){
+                throw Error(variantAsStr(argsList[0].data));
+            }else{
+                throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
+            }
         }else{
-            throw ParserException("Error Undefined Identifier \'" + identifier + "\'");
+            throw ParserException("~Error~ Undefined Identifier \'" + identifier + "\'");
         }
     }
 

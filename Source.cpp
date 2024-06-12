@@ -20,9 +20,6 @@ int executeFile(const std::string filename){
 
     Interpreter mainInterpreter;
     
-    /*
-        The code is enclosed in "{}" because the parser expects a code-block as the first node of the root.
-    */
     std::string code = "{"; 
     std::string readLine;
 

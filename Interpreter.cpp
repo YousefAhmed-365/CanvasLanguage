@@ -15,7 +15,7 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
     if(str.empty())
         return RET_CODE::OK;
 
-    static const std::string DEFAULT_REGEX_PATTERN = "(\"[^\"]*\"|[@A-Za-z_]+)|([0-9]+)(\\.[0-9]*)?|(==|>=|>|<=|<|!=|!|&&|\\|\\|)|([\\+\\-\\*\\/\\%\\^]?\\=)|(\\+\\+|\\+|\\-\\-|\\-|\\*|\\/|\\%|\\^|\\.)|(\\(|\\)|\\{|\\}|\\[|\\]|;|:|\\,)";
+    static const std::string DEFAULT_REGEX_PATTERN = "(\"[^\"]*\"|[@A-Za-z_]+)|([0-9]+)(\\.[0-9]*)?|(==|>=|>|<=|<|!=|!|&&|\\|\\|)|([\\+\\-\\*\\/\\%\\^]?\\=)|(\\+\\+|\\+|\\-\\-|\\-|\\*|\\/|\\%|\\^|\\.)|(\\(|\\)|\\{|\\}|\\[|\\]|;|:|\\,)|(\\n)";
     std::vector<Token> tokens = lex(str, DEFAULT_REGEX_PATTERN);
     
     if(isDebug){
@@ -33,13 +33,13 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
             treeRoot->debug_outNodes(0);
         }
         
-        //NodeInfo rootResult = treeRoot->eval(m_scopeManager);
+        NodeInfo rootResult = treeRoot->eval(m_scopeManager);
         auto executionEndTime = std::chrono::high_resolution_clock::now();
         auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(executionEndTime - compileStartTime);
 
 
         std::cout << "\nExited in " << executionTime.count() << "ms C/E(" << compileTime.count() << "ms, " << executionTime.count() - compileTime.count() << "ms)." << std::endl;
-    }catch(ParserException err){
+    }catch(Error err){
         std::cout << err.what() << std::endl;
 
         return RET_CODE::ERR; 
@@ -55,20 +55,26 @@ std::vector<Token> Interpreter::lex(const std::string &str, const std::string &p
     std::vector<Token> tokens;
     tokens.reserve(matches.size());
 
+    unsigned int row = 0, col = 0;
     for(std::string &e : matches){
-        if(g_util::isKeyword(e)){
-            tokens.emplace_back(TokenType::KEY, e);
+        if(e == "\n"){
+            ++row;
+            col = 0;
+        }else if(g_util::isKeyword(e)){
+            tokens.emplace_back(TokenType::KEY, e, row, col);
         }else if(g_util::isOperator(e)){
-            tokens.emplace_back(TokenType::OPR, e);
+            tokens.emplace_back(TokenType::OPR, e, row, col);
         }else if(g_util::isSymbol(e)){
-            tokens.emplace_back(TokenType::SYM, e);
+            tokens.emplace_back(TokenType::SYM, e, row, col);
         }else if(g_util::isNumLiteral(e)){
-            tokens.emplace_back(TokenType::NUM_LIT, e);
+            tokens.emplace_back(TokenType::NUM_LIT, e, row, col);
         }else if(g_util::isStringLiteral(e)){
-            tokens.emplace_back(TokenType::STR_LIT, e);
+            tokens.emplace_back(TokenType::STR_LIT, e, row, col);
         }else if(g_util::isIdentifier(e)){
-            tokens.emplace_back(TokenType::IDN, e);
+            tokens.emplace_back(TokenType::IDN, e, row, col);
         }
+
+        ++col;
     }
 
     return tokens;
@@ -113,21 +119,9 @@ bool TreeParser::isEnd(){
     return this->m_currTokenIndex == this->m_tokens->size() - 1;
 }
 
-bool TreeParser::check(TokenType type){
-    return m_currToken->type == type;
-}
-
-bool TreeParser::check(std::string value){
-    return m_currToken->value == value;
-}
-
-bool TreeParser::check(TokenType type, std::string value){
-    return m_currToken->type == type && m_currToken->value == value;
-}
-
 Token *TreeParser::nextToken(){
     if(isEnd()){
-        throw ParserException("~Error~ Invalid Token Exception");
+        throw SyntaxError("Invalid Token, Reached End of Line. \'" + m_currToken->value + "\'.", m_currToken->row, m_currToken->col);
     }
     
     return &m_tokens->at(m_currTokenIndex + 1);
@@ -141,22 +135,34 @@ Token *TreeParser::DelayedConsume(TokenType type){
 }
 
 void TreeParser::consume(){
-    m_currToken = &m_tokens->at((isEnd()? m_currTokenIndex : ++m_currTokenIndex));
+    if(!isEnd()){
+        m_currToken = &m_tokens->at(++m_currTokenIndex);
+    }else{
+        throw ParserException("~Error~ Reached End of Line.");
+    }
 }
 
 void TreeParser::consume(TokenType type){
     if(m_currToken->type == type){
-        m_currToken = &m_tokens->at((isEnd()? m_currTokenIndex : ++m_currTokenIndex));
+        if(!isEnd()){
+            m_currToken = &m_tokens->at(++m_currTokenIndex);
+        }else{
+            throw ParserException("~Error~ Reached End of Line.");
+        }
     }else{
-        throw ParserException("~Error~ Invalid Token Exception: " + m_currToken->value);
+        throw SyntaxError("Invalid Token \'" + m_currToken->value + "\'.", m_currToken->row, m_currToken->col);
     }
 }
 
 void TreeParser::consume(std::string value){
     if(m_currToken->value == value){
-        m_currToken = &m_tokens->at((isEnd()? m_currTokenIndex : ++m_currTokenIndex));
+        if(!isEnd()){
+            m_currToken = &m_tokens->at(++m_currTokenIndex);
+        }else{
+            throw ParserException("~Error~ Reached End of Line.");
+        }
     }else{
-        throw ParserException("~Error~ Invalid Token Exception: " + m_currToken->value + " Expected: " + value);
+        throw SyntaxError("Invalid Token \'" + m_currToken->value + "\' Expected \'" + value + "\'.", m_currToken->row, m_currToken->col);
     }
 }
 
@@ -167,7 +173,7 @@ std::shared_ptr<AbstractNode> TreeParser::parse(std::vector<Token> &tokenList){
 
     m_tokens = &tokenList;
     m_currToken = &m_tokens->at(0);
-
+    
     return parseBlockStatement();
 }
 
@@ -185,7 +191,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseBlockStatement(bool isPost){
 
     while(!isEnd()){
         if(m_currToken->value == "}"){
-            consume("}");
+            consume();
             break;
         }
 
@@ -216,8 +222,9 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
             }
             result = parseExpression();
         }
+        
         consume(";");
-    }else if(check(TokenType::SYM, "{")){
+    }else if(m_currToken->value == "{"){
         result = parseBlockStatement();
     }else if(m_currToken->value == "if"){
         consume(TokenType::KEY);
@@ -278,7 +285,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
             return nullptr;
         }
 
-        throw ParserException("~Error~ Invalid Token Exception: " + m_currToken->value);
+        throw SyntaxError("Invalid Token \'" + m_currToken->value + "\'.", m_currToken->row, m_currToken->col);
     }
 
     return result;
@@ -295,7 +302,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseTupleStatement(){
             consume();
         }else{
             if(m_currToken->value != ")"){
-                throw ParserException("~Error~ Invalid Token Exception: " + m_currToken->value);
+                throw SyntaxError("Invalid Token \'" + m_currToken->value + "\'.", m_currToken->row, m_currToken->col);
             }
         }
     }
@@ -432,7 +439,7 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
         std::shared_ptr<AbstractNode> rightOperand = parseExpression();
         
         if(rightOperand->getValue() == "."){
-            throw ParserException("~Syntax Error~ Can't nest access operators.");
+            throw SyntaxError("Can't nest access operators.", m_currToken->row, m_currToken->col);
         }
 
         result = std::make_shared<BinaryExpression>(oprStr, result, rightOperand);
@@ -446,5 +453,5 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
         return result;
     }
 
-    throw ParserException("~Syntax Error~ Invalid Token  \'" + m_currToken->value + "\'.");
+    throw SyntaxError("Invalid Token \'" + m_currToken->value + "\'.", m_currToken->row, m_currToken->col);
 }

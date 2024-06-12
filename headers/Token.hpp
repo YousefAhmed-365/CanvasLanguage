@@ -19,9 +19,10 @@ struct Token{
     // Variables
     TokenType type;
     std::string value;
+    unsigned int row, col;
     // Constructor & Destructor
     Token();
-    Token(TokenType type, std::string value);
+    Token(TokenType type, std::string str, unsigned int row, unsigned int col);
     ~Token() = default;
 };
 

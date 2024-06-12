@@ -19,9 +19,6 @@ class TreeParser{
 
         // Functions
         bool isEnd();
-        bool check(TokenType type);
-        bool check(std::string value);
-        bool check(TokenType type, std::string value);
         Token *nextToken();
         Token *DelayedConsume(TokenType type);
         void consume();

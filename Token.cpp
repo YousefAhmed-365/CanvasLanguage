@@ -3,13 +3,12 @@
 /* Token Struct */
 // Variables
 // Constructor & Destructor
-Token::Token(){
-    type = TokenType::NONE;
-    value = "";
-}
+Token::Token() : type(TokenType::NONE), value(""), col(0), row(0){}
 
-Token::Token(TokenType type, std::string str){
+Token::Token(TokenType type, std::string str, unsigned int row, unsigned int col){
     this->type = type;
-    value = str;
+    this->value = str;
+    this->col = col;
+    this->row = row;
 }
 // Functions
