@@ -7,6 +7,7 @@ bool g_util::isKeyword(std::string &str){
         str == "elif"   ||
         str == "else"   ||
         str == "while"  ||
+        str == "for"    ||
         str == "repeat" ||
         str == "def"    ||
         str == "ret"    ||

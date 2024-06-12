@@ -35,7 +35,7 @@ class TreeParser{
         std::shared_ptr<AbstractNode> parseStatementsList();
         std::shared_ptr<AbstractNode> parseStatement();
         std::shared_ptr<AbstractNode> parseBlockStatement(bool isPost = false);
-        std::shared_ptr<AbstractNode> parseTupleStatement();
+        std::shared_ptr<AbstractNode> parseTupleStatement(std::string separator = ",");
         std::shared_ptr<AbstractNode> parseExpression();
         std::shared_ptr<AbstractNode> parseLogicalTerm();
         std::shared_ptr<AbstractNode> parseComparisonTerm();

@@ -16,6 +16,7 @@ enum class NodeType{
     BRK_STM,
     IFC_STM,
     WHL_STM,
+    FOR_STM,
     REP_STM,
     DEF_STM,
     RET_STM,
@@ -113,6 +114,13 @@ struct IfStatement : public AbstractNode{
 struct WhileStatement : public AbstractNode{
     WhileStatement(std::shared_ptr<AbstractNode> condition);
     ~WhileStatement() = default;
+
+    NodeInfo eval(ScopeManager &scope) override;
+};
+
+struct ForStatement : public AbstractNode{
+    ForStatement();
+    ~ForStatement() = default;
 
     NodeInfo eval(ScopeManager &scope) override;
 };

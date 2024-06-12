@@ -255,6 +255,18 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
         result = std::make_shared<WhileStatement>(parseExpression());
         consume(")");
         result->attach(parseBlockStatement(true));
+    }else if(m_currToken->value == "for"){
+        consume(TokenType::KEY);
+        result = std::make_shared<ForStatement>();
+        result->attach(std::make_shared<AbstractList>());
+        consume("(");
+        result->getChildrens().at(0)->attach(parseStatement());
+        consume(",");
+        result->getChildrens().at(0)->attach(parseStatement());
+        consume(",");
+        result->getChildrens().at(0)->attach(parseStatement());
+        consume(")");
+        result->attach(parseBlockStatement(true));
     }else if(m_currToken->value == "repeat"){
         consume(TokenType::KEY);
         consume("(");
@@ -279,26 +291,23 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
         consume(TokenType::KEY);
         result = std::make_shared<FlowPoint>(1);
         consume(";");
+    }else if(m_currToken->value == ";"){
+        consume(TokenType::SYM);
     }else{
-        if(m_currToken->value == ";"){
-            consume(TokenType::SYM);
-            return nullptr;
-        }
-
         throw SyntaxError("Invalid Token \'" + m_currToken->value + "\'.", m_currToken->row, m_currToken->col);
     }
 
     return result;
 }
 
-std::shared_ptr<AbstractNode> TreeParser::parseTupleStatement(){
+std::shared_ptr<AbstractNode> TreeParser::parseTupleStatement(std::string separator){
     std::shared_ptr<AbstractList> result = std::make_shared<AbstractList>();
     
     consume("(");
     while(m_currToken->value != ")"){
         result->attach(parseExpression());
 
-        if(m_currToken->value == "," && nextToken()->value != ")"){
+        if(m_currToken->value == separator && nextToken()->value != ")"){
             consume();
         }else{
             if(m_currToken->value != ")"){

@@ -73,6 +73,7 @@ NodeInfo BlockStatement::eval(ScopeManager &scope){
         NodeInfo _info = e->eval(scope); 
 
         if(scope.isReturning){
+            scope.popScope();
             return _info;
         }
     };
@@ -139,16 +140,53 @@ NodeInfo WhileStatement::eval(ScopeManager &scope){
     while(!isVariantEmptyOrNull(identifierToLiteral(m_childrens[0]->eval(scope), scope).data)){
         NodeInfo _info = m_childrens[1]->eval(scope);
         if(scope.isReturning){
+            scope.popScope();
             return _info;
         }
 
         if(_info.type == NodeType::BRK_STM){
+            scope.popScope();
             break;
         }else if(_info.type == NodeType::CON_STM){
             continue;
         }
     }
     scope.popScope();
+    
+    return this->info;
+}
+
+/* ForStatement Struct */
+ForStatement::ForStatement(){
+    this->info.type = NodeType::WHL_STM;
+    this->m_value = "_FOR";
+}
+
+NodeInfo ForStatement::eval(ScopeManager &scope){
+    if(!m_childrens[0]->getChildrens().empty()){
+        scope.pushScope();
+        NodeInfo firstStatement = m_childrens[0]->getChildrens().at(0)->eval(scope);
+        NodeInfo secondStatement = m_childrens[0]->getChildrens().at(1)->eval(scope);
+        NodeInfo thirdStatement;
+        while(!isVariantEmptyOrNull(identifierToLiteral(secondStatement, scope).data)){
+            NodeInfo _info = m_childrens[1]->eval(scope);
+            if(scope.isReturning){
+                scope.popScope();
+                return _info;
+            }
+
+            if(_info.type == NodeType::BRK_STM){
+                scope.popScope();
+                break;
+            }else if(_info.type == NodeType::CON_STM){
+                continue;
+            }
+
+            thirdStatement = m_childrens[0]->getChildrens().at(2)->eval(scope);
+            secondStatement = m_childrens[0]->getChildrens().at(1)->eval(scope);
+        }
+        scope.popScope();
+    }
     
     return this->info;
 }
@@ -163,20 +201,24 @@ RepeatStatement::RepeatStatement(std::shared_ptr<AbstractNode> count){
 NodeInfo RepeatStatement::eval(ScopeManager &scope){
     NodeInfo expression = identifierToLiteral(m_childrens[0]->eval(scope), scope);
     if(expression.type == NodeType::NUM_LIT && variantAsNum(expression.data) >= 0){
+        scope.pushScope();
         unsigned int count = variantAsNum(expression.data);
         NodeInfo _info;
         for(unsigned int i = 0; i < count; ++i){
             NodeInfo _info = m_childrens[1]->eval(scope);
             if(scope.isReturning){
+                scope.popScope();
                 return _info;
             }
             
             if(_info.type == NodeType::BRK_STM){
+                scope.popScope();
                 break;
             }else if(_info.type == NodeType::CON_STM){
                 continue;
             }
         }
+        scope.popScope();
     }else{
         throw ParserException("~Error~ Invalid arguments for 'repeat'");
     }
@@ -322,7 +364,15 @@ UnaryExpression::UnaryExpression(std::string &oprStr, std::shared_ptr<AbstractNo
 }
 
 NodeInfo UnaryExpression::eval(ScopeManager &scope){
-    NodeInfo leftNode = identifierToLiteral(m_childrens[0]->eval(scope), scope);
+    NodeInfo leftNode = m_childrens[0]->eval(scope);
+
+    std::string identifier;
+    Data *data = nullptr;
+    if(leftNode.type == NodeType::IDN){
+        identifier = std::get<std::string>(leftNode.data);
+        data = scope.findData(identifier);
+        leftNode = identifierToLiteral(leftNode, scope);
+    }
 
     switch (this->type){
     case OperatorType::LOG_NOT:
@@ -342,15 +392,31 @@ NodeInfo UnaryExpression::eval(ScopeManager &scope){
         break;
 
     case OperatorType::OPR_INC:
-        if(leftNode.type == NodeType::NUM_LIT){
+        if(data != nullptr && leftNode.type == NodeType::NUM_LIT){
             leftNode.data = variantAsNum(leftNode.data) + 1;
+            *data = leftNode.data;
+        }else{
+            throw ParserException("~Error~ Invalid Unary Operation \'" + m_value + variantAsStr(leftNode.data) + "\' Incompatible Type.");
+        }
+        break;
+    case OperatorType::OPR_INC_DEL:
+        if(data != nullptr && leftNode.type == NodeType::NUM_LIT){
+            *data = variantAsNum(leftNode.data) + 1;
         }else{
             throw ParserException("~Error~ Invalid Unary Operation \'" + m_value + variantAsStr(leftNode.data) + "\' Incompatible Type.");
         }
         break;
     case OperatorType::OPR_DEC:
-        if(leftNode.type == NodeType::NUM_LIT){
+        if(data != nullptr && leftNode.type == NodeType::NUM_LIT){
             leftNode.data = variantAsNum(leftNode.data) - 1;
+            *data = leftNode.data;
+        }else{
+            throw ParserException("~Error~ Invalid Unary Operation \'" + m_value + variantAsStr(leftNode.data) + "\' Incompatible Type.");
+        }
+        break;
+    case OperatorType::OPR_DEC_DEL:
+        if(data != nullptr && leftNode.type == NodeType::NUM_LIT){
+            *data = variantAsNum(leftNode.data) - 1;
         }else{
             throw ParserException("~Error~ Invalid Unary Operation \'" + m_value + variantAsStr(leftNode.data) + "\' Incompatible Type.");
         }
@@ -466,6 +532,7 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                 scope.pushData(paramsList[i], argsList[i].data);
             }
             NodeInfo _info = funDefNodePtr->at(2)->eval(scope);
+            scope.isReturning = false;
             scope.popScope();
             return _info;
         }else{
