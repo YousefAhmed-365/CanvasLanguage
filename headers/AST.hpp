@@ -185,5 +185,4 @@ struct AssignementStatment : public AbstractNode{
 
 // Helper Functions
 NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope);
-
 #endif

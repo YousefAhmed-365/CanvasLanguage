@@ -476,8 +476,9 @@ RetStatement::RetStatement(std::shared_ptr<AbstractNode> expression){
 }
 
 NodeInfo RetStatement::eval(ScopeManager &scope){
+    NodeInfo _info = identifierToLiteral(m_childrens[0]->eval(scope), scope); 
     scope.isReturning = true;
-    return identifierToLiteral(m_childrens[0]->eval(scope), scope);
+    return _info;
 }
 
 /* FlowPoint Struct */
@@ -531,6 +532,7 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
             for(int i = 0; i < paramsList.size(); i++){
                 scope.pushData(paramsList[i], argsList[i].data);
             }
+
             NodeInfo _info = funDefNodePtr->at(2)->eval(scope);
             scope.isReturning = false;
             scope.popScope();
@@ -721,6 +723,10 @@ NodeInfo AssignementStatment::eval(ScopeManager &scope){
 
 // Helper Functions
 NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope){
+    if(std::holds_alternative<void*>(info.data)){
+
+    }
+
     Data *data;
     switch(info.type){
     case NodeType::IDN:
