@@ -1,23 +1,39 @@
 # Root Language
 statement_list 			::= statement*
-statement 				::=	expression
+statement 				::=	expression	";"
+							| block_statement
 							| assignment_statement
+							| if_statement
+							| while_statement
+							| for_statement
+							| repeat_statement
+							| def_statement
+							| ret_statement
 							
+block_statement			::= "{" statement_list "}"
 assignment_statement	::= ID ASG_OPR (expression)
+if_statement			::= "if" "(" expression ")" block_statement ("elif" "(" expression ")" block_statement)* ("else" block_statement)?
+while_statement			::= "while" "(" expression ")" block_statement
+for_statement			::= "for" "(" statement "," statement "," statement ")" block_statement
+repeat_statement		::= "repeat" "(" expression ")" block_statement
+def_statement			::= "def" IDN tuple_statement block_statement
+call_statement			::= IDN tuple_statement
+ret_statement			::= "ret" expression ";"
+tuple_statement			::= "(" expression ("," expression)* ")"
 
-# Mathematical Expressions
 expression 				::= logical_term (LOGICAL logical_term)*
 logical_term			::= comparison_term (COMPARISON comparison_term)*
 comparison_term			::= term (("+" | "-") term)*
 term 					::= exponential_term (("*" | "/" | "%") exponential_term)*
 exponential_term 		::= factor ("^" factor)*
-factor 					::= UNARY* ("(" expression ")" | ID | LIT)
+factor 					::= UNARY* ("(" expression ")" | ID | LIT | call_statement)
+
 # Predefined
-ASG_OPR 				::= "=" | "+=" | "-=" | "*=" | "/="				
+ASG_OPR 				::= "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "^="
 UNARY 					::= "!" | "-" | "new"
-COMPARISON 				::= "==" | ">=" | "" | "<=" | "" | "!="
+COMPARISON 				::= "==" | ">=" | ">" | "<=" | "<" | "!="
 LOGICAL 				::= "&&" | "||"
 LIT  					::= STR | NUM
 ID 						::= [@A-Za-z_]+
-NUM 					::= [0-9]+
-STR						::= "\"" . "\""
+NUM_LIT 				::= [0-9]+
+STR_LIT					::= "\"" . "\""
