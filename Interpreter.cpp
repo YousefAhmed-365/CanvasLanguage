@@ -33,7 +33,7 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
             treeRoot->debug_outNodes(0);
         }
         
-        NodeInfo rootResult = treeRoot->eval(m_scopeManager);
+        //NodeInfo rootResult = treeRoot->eval(m_scopeManager);
         auto executionEndTime = std::chrono::high_resolution_clock::now();
         auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(executionEndTime - compileStartTime);
 
@@ -300,22 +300,22 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
     return result;
 }
 
-std::shared_ptr<AbstractNode> TreeParser::parseTupleStatement(std::string separator){
-    std::shared_ptr<AbstractList> result = std::make_shared<AbstractList>();
+std::shared_ptr<AbstractNode> TreeParser::parseTupleStatement(std::string separator, std::string opening, std::string closing){
+    std::shared_ptr<AbstractNode> result = std::make_shared<AbstractList>();
     
-    consume("(");
-    while(m_currToken->value != ")"){
+    consume(opening);
+    while(m_currToken->value != closing){
         result->attach(parseExpression());
 
-        if(m_currToken->value == separator && nextToken()->value != ")"){
+        if(m_currToken->value == separator && nextToken()->value != closing){
             consume();
         }else{
-            if(m_currToken->value != ")"){
+            if(m_currToken->value != closing){
                 throw SyntaxError("Invalid Token \'" + m_currToken->value + "\'.", m_currToken->row, m_currToken->col);
             }
         }
     }
-    consume(")");
+    consume(closing);
 
     return result;
 }
@@ -370,14 +370,39 @@ std::shared_ptr<AbstractNode> TreeParser::parseTerm(){
 }
 
 std::shared_ptr<AbstractNode> TreeParser::parseExponentialTerm(){
-    std::shared_ptr<AbstractNode> result = parseFactor();
+    std::shared_ptr<AbstractNode> result = parseAccessTerm();
 
-    std::string tokenStr;
+    std::string oprStr;
     while(m_currToken->value == "^"){
-        tokenStr = DelayedConsume(TokenType::OPR)->value;
-        result = std::make_shared<BinaryExpression>(tokenStr, result, parseFactor());
+        oprStr = DelayedConsume(TokenType::OPR)->value;
+        result = std::make_shared<BinaryExpression>(oprStr, result, parseAccessTerm());
     }
     
+    return result;
+}
+
+std::shared_ptr<AbstractNode> TreeParser::parseAccessTerm(){
+    std::shared_ptr<AbstractNode> result = parseOffsetTerm();
+
+    std::string oprStr;
+    while(m_currToken->value == "."){
+        oprStr = DelayedConsume(TokenType::OPR)->value;
+        result = std::make_shared<BinaryExpression>(oprStr, result, parseOffsetTerm());
+    }
+
+    return result;
+}
+
+std::shared_ptr<AbstractNode> TreeParser::parseOffsetTerm(){
+    std::shared_ptr<AbstractNode> result = parseFactor();
+
+    std::string oprStr;
+    while(m_currToken->value == "["){
+        oprStr = DelayedConsume(TokenType::SYM)->value;
+        result = std::make_shared<BinaryExpression>(oprStr, result, parseFactor());
+        consume("]");
+    }
+
     return result;
 }
 
@@ -403,6 +428,8 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
             consume();
             result = parseExpression();
             consume(")");
+        }else if(m_currToken->value == "["){
+            result = parseTupleStatement(",", "[", "]");
         }
         break;
     case TokenType::NUM_LIT:
@@ -441,17 +468,6 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
     
     default:
         break;
-    }
-
-    if(m_currToken->value == "."){
-        std::string &oprStr = DelayedConsume(TokenType::OPR)->value;
-        std::shared_ptr<AbstractNode> rightOperand = parseExpression();
-        
-        if(rightOperand->getValue() == "."){
-            throw SyntaxError("Can't nest access operators.", m_currToken->row, m_currToken->col);
-        }
-
-        result = std::make_shared<BinaryExpression>(oprStr, result, rightOperand);
     }
 
     for(auto it = unaryOperators.rbegin(); it != unaryOperators.rend(); ++it){

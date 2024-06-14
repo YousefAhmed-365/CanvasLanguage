@@ -109,7 +109,7 @@ std::string variantAsStr(Data &data) {
     }else if(const auto* floatPtr = std::get_if<float>(&data)){
         return std::to_string(*floatPtr);
     }else if(const auto* voidPtr = std::get_if<void*>(&data)){
-        return "(_FUN)" + std::to_string(reinterpret_cast<long>(voidPtr));
+        return "(_PTR)" + std::to_string(reinterpret_cast<long>(voidPtr));
     }
 
     return std::get<std::string>(data);

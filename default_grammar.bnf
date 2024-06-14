@@ -20,17 +20,21 @@ def_statement			::= "def" IDN tuple_statement block_statement
 call_statement			::= IDN tuple_statement
 ret_statement			::= "ret" expression ";"
 tuple_statement			::= "(" expression ("," expression)* ")"
+offset_opr				::= "[" expression "]"	
 
 expression 				::= logical_term (LOGICAL logical_term)*
 logical_term			::= comparison_term (COMPARISON comparison_term)*
 comparison_term			::= term (("+" | "-") term)*
 term 					::= exponential_term (("*" | "/" | "%") exponential_term)*
-exponential_term 		::= factor ("^" factor)*
+exponential_term 		::= access_term ("^" access_term)*
+access_term				::= offset_term ("[" offset_term "]")*
+offset_term				::= factor ("[" factor "]")*
 factor 					::= UNARY* ("(" expression ")" | ID | LIT | call_statement)
 
 # Predefined
 ASG_OPR 				::= "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "^="
-UNARY 					::= "!" | "-" | "new"
+BINARY					::= "+" | "-" | "*" | "/" | "%" | "^" | offset_opr
+UNARY 					::= "!" | "-" | "++" | "--" | "new"
 COMPARISON 				::= "==" | ">=" | ">" | "<=" | "<" | "!="
 LOGICAL 				::= "&&" | "||"
 LIT  					::= STR | NUM

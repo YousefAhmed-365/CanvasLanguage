@@ -33,6 +33,7 @@ enum class OperatorType{
     OPR_DEC,
     OPR_DEC_DEL,
     OPR_ACC,
+    OPR_OFF,
 
     LOG_EQL,
     LOG_NEQ,
@@ -65,6 +66,7 @@ const std::unordered_map<std::string, OperatorType> operatorStrToken = {
     {"--", OperatorType::OPR_DEC},
     {"--_DEL", OperatorType::OPR_DEC_DEL},
     {".", OperatorType::OPR_ACC},
+    {"[", OperatorType::OPR_OFF},
 
     {"=", OperatorType::ASG_EQL},
     {"+=", OperatorType::ASG_ADD},

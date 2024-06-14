@@ -10,6 +10,7 @@ enum class NodeType{
 
     BLC_STM,
     ABS_LST,
+    DYN_LST,
     BIN_EXP,
     UNR_EXP,
     CON_STM,

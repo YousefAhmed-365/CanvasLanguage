@@ -50,14 +50,11 @@ void AbstractNode::debug_outNodes(int indent){
 /* AbstractList Struct */
 AbstractList::AbstractList(){
     this->info.type = NodeType::ABS_LST;
-    this->m_value = "[]";
+    this->m_value = "_ABS[]";
 }
 
 NodeInfo AbstractList::eval(ScopeManager &scope){
-    for(auto &e : m_childrens){
-        this->info = e->eval(scope);
-    };
-
+    this->info.data = this;
     return this->info;
 }
 
