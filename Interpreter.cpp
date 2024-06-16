@@ -33,7 +33,7 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
             treeRoot->debug_outNodes(0);
         }
         
-        //NodeInfo rootResult = treeRoot->eval(m_scopeManager);
+        NodeInfo rootResult = treeRoot->eval(m_scopeManager);
         auto executionEndTime = std::chrono::high_resolution_clock::now();
         auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(executionEndTime - compileStartTime);
 
