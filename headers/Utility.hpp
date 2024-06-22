@@ -67,6 +67,7 @@ const std::unordered_map<std::string, OperatorType> operatorStrToken = {
     {"--_DEL", OperatorType::OPR_DEC_DEL},
     {".", OperatorType::OPR_ACC},
     {"[", OperatorType::OPR_OFF},
+    {"_ABS[]", OperatorType::OPR_OFF},
 
     {"=", OperatorType::ASG_EQL},
     {"+=", OperatorType::ASG_ADD},
