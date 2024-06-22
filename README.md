@@ -98,7 +98,7 @@ Open the terminal in the source directory and then use the following commands:
 ```bash
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release
+cmake -DCMAKE_BUILD_TYPE=RELEASE
 # Use make instead of mingw32-make if you are on Linux.
 mingw32-make
 ```
