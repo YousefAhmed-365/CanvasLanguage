@@ -658,18 +658,23 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                 if(argsList[0].type == NodeType::STR_LIT && argsList[1].type == NodeType::STR_LIT){
                     if(stripStr(std::get<std::string>(argsList[0].data)) == "LIB"){
                         std::string importName = stripStr(std::get<std::string>(argsList[1].data));
-                        for(auto &e : scope.globalImportStack){
-                            if(importName == e){
-                                throw ParserException("~Error~ Recursive imports \'" + importName + "\'.");
+                        if(const std::shared_ptr<AbstractNode> libNode = scope.findLib(importName)){
+                            
+                        }else{
+                            for(auto &e : scope.globalImportStack){
+                                if(importName == e){
+                                    throw ParserException("~Error~ Recursive imports \'" + importName + "\'.");
+                                }
                             }
-                        }
-                        scope.globalImportStack.emplace_back(importName);
+                            scope.globalImportStack.emplace_back(importName);
 
-                        Interpreter libInterpreter;
-                        std::string code = loadFileContentAsCode(importName);
-                        libInterpreter.execute(code, scope, true);
-                        std::shared_ptr<AbstractNode> treeRoot = libInterpreter.getExecutedRoot();
-                        scope.globalImportStack.pop_back();
+                            Interpreter libInterpreter;
+                            std::string code = loadFileContentAsCode(importName);
+                            libInterpreter.execute(code, scope, false);
+                            std::shared_ptr<AbstractNode> treeRoot = libInterpreter.getExecutedRoot();
+                            scope.pushLib(importName, treeRoot);
+                            scope.globalImportStack.pop_back();
+                        }
                     }else{
                         throw ParserException("~Error~ Invalid import type for \'" + stripStr(std::get<std::string>(argsList[1].data)) + "\'.");
                     }

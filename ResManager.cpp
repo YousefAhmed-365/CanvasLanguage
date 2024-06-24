@@ -37,9 +37,24 @@ ScopeManager::ScopeManager(){
 }
 
 // Functions
+void ScopeManager::pushLib(std::string libName, std::shared_ptr<AbstractNode> node){
+    m_libs[libName] = node;
+}
+
+std::shared_ptr<AbstractNode> ScopeManager::findLib(std::string libName){
+    for(auto &e : m_libs){
+        if(e.first == libName){
+            return e.second;
+        }
+    }
+    
+    return nullptr;
+}
+
 void ScopeManager::pushScope(){
     m_currentScope = std::make_shared<SymbolTable>(m_currentScope);
 }
+
 void ScopeManager::popScope(){
     if(m_currentScope->getParent() != nullptr){
         m_currentScope = m_currentScope->getParent();
@@ -49,6 +64,7 @@ void ScopeManager::popScope(){
 void ScopeManager::pushData(const std::string &name, const Data &value){
     m_currentScope->push(name, value);
 }
+
 Data *ScopeManager::findData(const std::string &name, SymbolSearchType type){
     return m_currentScope->find(name, type);
 }
