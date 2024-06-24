@@ -5,6 +5,9 @@
 #include "ResManager.hpp"
 #include "Error.hpp"
 
+class AbstractNode;
+#include "Interpreter.hpp"
+
 enum class NodeType{
     NONE,
 

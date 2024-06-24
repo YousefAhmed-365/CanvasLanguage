@@ -11,9 +11,10 @@ Interpreter::~Interpreter(){
 }
 
 // Functions
-RET_CODE Interpreter::execute(std::string &str, bool isDebug){
-    if(str.empty())
+RET_CODE Interpreter::execute(std::string &str, ScopeManager &scope, bool isDebug){
+    if(str.empty()){
         return RET_CODE::OK;
+    }
 
     static const std::string DEFAULT_REGEX_PATTERN = "(\"[^\"]*\"|[@A-Za-z_]+)|([0-9]+)(\\.[0-9]*)?|(==|>=|>|<=|<|!=|!|&&|\\|\\|)|([\\+\\-\\*\\/\\%\\^]?\\=)|(\\+\\+|\\+|\\-\\-|\\-|\\*|\\/|\\%|\\^|\\.)|(\\(|\\)|\\{|\\}|\\[|\\]|;|:|\\,)|(\\n)";
     std::vector<Token> tokens = lex(str, DEFAULT_REGEX_PATTERN);
@@ -33,12 +34,13 @@ RET_CODE Interpreter::execute(std::string &str, bool isDebug){
             treeRoot->debug_outNodes(0);
         }
         
-        NodeInfo rootResult = treeRoot->eval(m_scopeManager);
+        this->m_executedRoot = treeRoot;
+        NodeInfo rootResult = treeRoot->eval(scope);
         auto executionEndTime = std::chrono::high_resolution_clock::now();
         auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(executionEndTime - compileStartTime);
 
 
-        std::cout << "\nExited in " << executionTime.count() << "ms C/E(" << compileTime.count() << "ms, " << executionTime.count() - compileTime.count() << "ms)." << std::endl;
+        //std::cout << "\nExited in " << executionTime.count() << "ms C/E(" << compileTime.count() << "ms, " << executionTime.count() - compileTime.count() << "ms)." << std::endl;
     }catch(Error err){
         std::cout << err.what() << std::endl;
 
@@ -78,6 +80,9 @@ std::vector<Token> Interpreter::lex(const std::string &str, const std::string &p
     }
 
     return tokens;
+}
+std::shared_ptr<AbstractNode> Interpreter::getExecutedRoot(){
+    return this->m_executedRoot;
 }
 
 void Interpreter::debug_outTokens(std::vector<Token> &tokens){

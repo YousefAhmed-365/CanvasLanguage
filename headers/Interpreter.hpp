@@ -52,6 +52,7 @@ class Interpreter{
         // Variables
         TreeParser m_parser;
         ScopeManager m_scopeManager;
+        std::shared_ptr<AbstractNode> m_executedRoot;
     public:
         // Variables
         // Constructor & Destructor
@@ -59,9 +60,10 @@ class Interpreter{
         ~Interpreter();
 
         // Functions
-        RET_CODE execute(std::string &str, bool isDebug = false);
+        RET_CODE execute(std::string &str, ScopeManager &scope, bool isDebug = false);
         std::vector<Token> lex(const std::string &str, const std::string &pattern);
 
+        std::shared_ptr<AbstractNode> getExecutedRoot();
         void debug_outTokens(std::vector<Token> &tokens);
 };
 

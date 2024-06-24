@@ -138,3 +138,23 @@ std::string sanitizeStr(std::string str){
 
     return str;
 }
+
+std::string loadFileContentAsCode(std::string fileName){
+    std::ifstream file(fileName);
+
+    if(!file.is_open()){
+        std::cout << "~Error~ Failed to open \'" << fileName << "\'" << std::endl;
+        return "";
+    }
+
+    std::string readLine;
+    std::string content = "{\n";
+    while(std::getline(file, readLine)){
+        if (!readLine.empty() && readLine != "\n" && readLine[0] != '#') {
+            content.append(readLine + "\n");
+        }
+    } file.close();
+    content.append("}");
+
+    return content;
+}

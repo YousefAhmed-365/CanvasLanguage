@@ -10,27 +10,12 @@ options:
     -v | --version : Display version
     -e | --execute : Execute file)";
 
-int executeFile(const std::string filename){
-    std::ifstream file(filename);
-
-    if(!file.is_open()){
-        std::cout << "~Error~ Failed to open \'" << filename << "\'" << std::endl;
-        return 1;
-    }
-
+int executeFile(const std::string fileName){
     Interpreter mainInterpreter;
+    ScopeManager mainScopeManager;
     
-    std::string code = "{"; 
-    std::string readLine;
-
-    while(std::getline(file, readLine)){
-        if (!readLine.empty() && readLine != "\n" && readLine[0] != '#') {
-            code.append(readLine + "\n");
-        }
-    } file.close();
-    code.append("}");
-
-    RET_CODE exitCode = mainInterpreter.execute(code, true);
+    std::string code = loadFileContentAsCode(fileName); 
+    RET_CODE exitCode = mainInterpreter.execute(code, mainScopeManager, true);
     
     if(exitCode == RET_CODE::ERR){
         std::cout << "Exited with errors." << std::endl;

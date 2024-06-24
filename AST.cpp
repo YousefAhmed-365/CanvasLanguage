@@ -653,6 +653,32 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
             }else{
                 throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
             }
+        }else if(identifier == "import"){
+            if(argsList.size() == 2){
+                if(argsList[0].type == NodeType::STR_LIT && argsList[1].type == NodeType::STR_LIT){
+                    if(stripStr(std::get<std::string>(argsList[0].data)) == "LIB"){
+                        std::string importName = stripStr(std::get<std::string>(argsList[1].data));
+                        for(auto &e : scope.globalImportStack){
+                            if(importName == e){
+                                throw ParserException("~Error~ Recursive imports \'" + importName + "\'.");
+                            }
+                        }
+                        scope.globalImportStack.emplace_back(importName);
+
+                        Interpreter libInterpreter;
+                        std::string code = loadFileContentAsCode(importName);
+                        libInterpreter.execute(code, scope, true);
+                        std::shared_ptr<AbstractNode> treeRoot = libInterpreter.getExecutedRoot();
+                        scope.globalImportStack.pop_back();
+                    }else{
+                        throw ParserException("~Error~ Invalid import type for \'" + stripStr(std::get<std::string>(argsList[1].data)) + "\'.");
+                    }
+                }else{
+                    throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
+                }
+            }else{
+                throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
+            }
         }else{
             throw ParserException("~Error~ Undefined Identifier \'" + identifier + "\'");
         }
