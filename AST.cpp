@@ -659,7 +659,7 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                     if(stripStr(std::get<std::string>(argsList[0].data)) == "LIB"){
                         std::string importName = stripStr(std::get<std::string>(argsList[1].data));
                         if(const std::shared_ptr<AbstractNode> libNode = scope.findLib(importName)){
-                            
+                            libNode->eval(scope);
                         }else{
                             for(auto &e : scope.globalImportStack){
                                 if(importName == e){
