@@ -127,7 +127,7 @@ bool isVariantEmptyOrNull(Data data){
     return true;
 }
 
-std::string stripStr(std::string &str){
+std::string stripStr(std::string str){
     return str.length() < 2 ? str : str.substr(1, str.size() - 2);
 }
 

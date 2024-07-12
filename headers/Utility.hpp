@@ -133,7 +133,7 @@ float variantAsNum(Data &data);
 std::string variantAsStr(Data &data);
 bool isVariantEmptyOrNull(Data data);
 
-std::string stripStr(std::string &str);
+std::string stripStr(std::string str);
 std::string sanitizeStr(std::string str);
 
 std::string loadFileContentAsCode(std::string fileName);

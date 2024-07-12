@@ -660,6 +660,7 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                         std::string importName = stripStr(std::get<std::string>(argsList[1].data));
                         if(const std::shared_ptr<AbstractNode> libNode = scope.findLib(importName)){
                             libNode->eval(scope);
+                            return NodeInfo(NodeType::LIB, libNode.get());
                         }else{
                             for(auto &e : scope.globalImportStack){
                                 if(importName == e){
@@ -674,6 +675,7 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                             std::shared_ptr<AbstractNode> treeRoot = libInterpreter.getExecutedRoot();
                             scope.pushLib(importName, treeRoot);
                             scope.globalImportStack.pop_back();
+                            return NodeInfo(NodeType::LIB, libNode.get());
                         }
                     }else{
                         throw ParserException("~Error~ Invalid import type for \'" + stripStr(std::get<std::string>(argsList[1].data)) + "\'.");
@@ -684,8 +686,14 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
             }else{
                 throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
             }
+        }else if(identifier == "invoke"){
+            if(argsList.size() >= 1 && argsList[0].type == NodeType::STR_LIT){
+                return invoke(scope, stripStr(std::get<std::string>(argsList[0].data)), argsList);
+            }else{
+                throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
+            }
         }else{
-            throw ParserException("~Error~ Undefined Identifier \'" + identifier + "\'");
+            throw ParserException("~Error~ Undefined Function Identifier \'" + identifier + "\'.");
         }
     }
 
@@ -798,4 +806,31 @@ NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope){
     }
 
     return NodeInfo(NodeType::STR_LIT, *data);
+}
+
+NodeInfo invoke(ScopeManager &scope, std::string identifier, std::vector<NodeInfo> &argsList){
+    if(Data *data = scope.findData(identifier)){
+        std::vector<std::shared_ptr<AbstractNode>> *funDefNodePtr = static_cast<std::vector<std::shared_ptr<AbstractNode>>*>(std::get<void*>(*data));
+        std::vector<std::string> paramsList;
+        paramsList.reserve(funDefNodePtr->at(1)->getChildrens().size());
+        for(auto &e : funDefNodePtr->at(1)->getChildrens()){
+            paramsList.emplace_back(std::get<std::string>(e->eval(scope).data));
+        }
+
+        if(paramsList.size() == argsList.size() - 1){
+            scope.pushScope();
+            for(int i = 0; i < paramsList.size(); i++){
+                scope.pushData(paramsList[i], argsList[i + 1].data);
+            }
+
+            NodeInfo _info = funDefNodePtr->at(2)->eval(scope);
+            scope.isReturning = false;
+            scope.popScope();
+            return _info;
+        }else{
+            throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
+        }
+    }else{
+        throw ParserException("~Error~ Undefined Function Identifier \'" + identifier + "\'.");
+    }
 }
