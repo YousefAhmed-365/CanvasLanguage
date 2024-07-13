@@ -671,7 +671,7 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
 
                             Interpreter libInterpreter;
                             std::string code = loadFileContentAsCode(importName);
-                            libInterpreter.execute(code, scope, false);
+                            libInterpreter.execute(code, scope, DebugType::NONE);
                             std::shared_ptr<AbstractNode> treeRoot = libInterpreter.getExecutedRoot();
                             scope.pushLib(importName, treeRoot);
                             scope.globalImportStack.pop_back();

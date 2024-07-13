@@ -11,7 +11,7 @@ Interpreter::~Interpreter(){
 }
 
 // Functions
-RET_CODE Interpreter::execute(std::string &str, ScopeManager &scope, bool isDebug){
+RET_CODE Interpreter::execute(std::string &str, ScopeManager &scope, DebugType debugType){
     if(str.empty()){
         return RET_CODE::OK;
     }
@@ -19,7 +19,7 @@ RET_CODE Interpreter::execute(std::string &str, ScopeManager &scope, bool isDebu
     static const std::string DEFAULT_REGEX_PATTERN = "(\"[^\"]*\"|[@A-Za-z_]+)|([0-9]+)(\\.[0-9]*)?|(==|>=|>|<=|<|!=|!|&&|\\|\\|)|([\\+\\-\\*\\/\\%\\^]?\\=)|(\\+\\+|\\+|\\-\\-|\\-|\\*|\\/|\\%|\\^|\\.)|(\\(|\\)|\\{|\\}|\\[|\\]|;|:|\\,)|(\\n)";
     std::vector<Token> tokens = lex(str, DEFAULT_REGEX_PATTERN);
     
-    if(isDebug){
+    if(debugType == DebugType::SHOW_PARSING || debugType == DebugType::DETAILED){
         debug_outTokens(tokens);
     }
 
@@ -29,9 +29,10 @@ RET_CODE Interpreter::execute(std::string &str, ScopeManager &scope, bool isDebu
         auto compileEndTime = std::chrono::high_resolution_clock::now();
         auto compileTime = std::chrono::duration_cast<std::chrono::milliseconds>(compileEndTime - compileStartTime);
 
-        if(treeRoot != nullptr && isDebug){
-            std::cout << "\nNode Tree\n->" << std::endl;
+        if(treeRoot != nullptr && (debugType == DebugType::SHOW_PARSING || debugType == DebugType::DETAILED)){
+            std::cout << "\nNode Tree\n->";
             treeRoot->debug_outNodes(0);
+            std::cout << std::endl;
         }
         
         this->m_executedRoot = treeRoot;
@@ -39,8 +40,9 @@ RET_CODE Interpreter::execute(std::string &str, ScopeManager &scope, bool isDebu
         auto executionEndTime = std::chrono::high_resolution_clock::now();
         auto executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(executionEndTime - compileStartTime);
 
-
-        //std::cout << "\nExited in " << executionTime.count() << "ms C/E(" << compileTime.count() << "ms, " << executionTime.count() - compileTime.count() << "ms)." << std::endl;
+        if(debugType == DebugType::TIME_ONLY || debugType == DebugType::DETAILED){
+            std::cout << "\nExited in " << executionTime.count() << "ms P/E(" << compileTime.count() << "ms, " << executionTime.count() - compileTime.count() << "ms)." << std::endl;
+        }
     }catch(Error err){
         std::cout << err.what() << std::endl;
 

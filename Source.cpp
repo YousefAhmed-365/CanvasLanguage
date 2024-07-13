@@ -3,7 +3,7 @@
 
 const std::string versionInformation = R"(Canvas Alpha v0.1)";
 const std::string helpInformation = 
-R"(Usage: canvas [options] [-c <filename>]
+R"(Usage: canvas [options] [-e <filename>]
                 
 options:
     -h | --help    : Display help
@@ -15,7 +15,7 @@ int executeFile(const std::string fileName){
     ScopeManager mainScopeManager;
     
     std::string code = loadFileContentAsCode(fileName); 
-    RET_CODE exitCode = mainInterpreter.execute(code, mainScopeManager, true);
+    RET_CODE exitCode = mainInterpreter.execute(code, mainScopeManager, DebugType::DETAILED);
     
     if(exitCode == RET_CODE::ERR){
         std::cout << "Exited with errors." << std::endl;

@@ -47,6 +47,14 @@ class TreeParser{
         std::shared_ptr<AbstractNode> parseUnary();
 };
 
+enum class DebugType{
+    NONE,
+
+    SHOW_PARSING,
+    TIME_ONLY,
+    DETAILED
+};
+
 class Interpreter{
     private:
         // Variables
@@ -60,7 +68,7 @@ class Interpreter{
         ~Interpreter();
 
         // Functions
-        RET_CODE execute(std::string &str, ScopeManager &scope, bool isDebug = false);
+        RET_CODE execute(std::string &str, ScopeManager &scope, DebugType debugType = DebugType::NONE);
         std::vector<Token> lex(const std::string &str, const std::string &pattern);
 
         std::shared_ptr<AbstractNode> getExecutedRoot();
