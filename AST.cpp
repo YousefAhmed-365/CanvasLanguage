@@ -809,6 +809,11 @@ NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope){
 }
 
 NodeInfo invoke(ScopeManager &scope, std::string identifier, std::vector<NodeInfo> &argsList){
+    if(identifier == "the fifth"){
+        std::cout << "You have the right to remain silent... but not your code!" << std::endl;
+        return NodeInfo(NodeType::STR_LIT, "\"egg\"");
+    }
+
     if(Data *data = scope.findData(identifier)){
         std::vector<std::shared_ptr<AbstractNode>> *funDefNodePtr = static_cast<std::vector<std::shared_ptr<AbstractNode>>*>(std::get<void*>(*data));
         std::vector<std::string> paramsList;

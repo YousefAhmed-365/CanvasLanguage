@@ -192,4 +192,5 @@ struct AssignementStatment : public AbstractNode{
 // Helper Functions
 NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope);
 NodeInfo invoke(ScopeManager &scope, std::string identifier, std::vector<NodeInfo> &argsList);
+
 #endif
