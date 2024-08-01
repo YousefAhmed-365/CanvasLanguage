@@ -32,7 +32,8 @@ enum class NodeType{
     NUM_LIT,
     STR_LIT,
 
-    LIB
+    LIB,
+    PTR
 };
 
 struct NodeInfo{

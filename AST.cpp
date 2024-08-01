@@ -360,6 +360,13 @@ NodeInfo BinaryExpression::eval(ScopeManager &scope){
                     }else{
                         throw ParserException("~Error~ Out of bounds exception");
                     }
+                }else if(leftNode.type == NodeType::PTR){
+                    AbstractList* _data = static_cast<AbstractList*>(std::get<void*>(leftNode.data));
+                    if(index < _data->getChildrens().size() && index >= 0){
+                        leftNode = _data->getChildrens()[static_cast<int>(variantAsNum(rightNode.data))]->eval(scope);
+                    }else{
+                        throw ParserException("~Error~ Out of bounds exception");
+                    }
                 }
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
@@ -781,10 +788,6 @@ NodeInfo AssignementStatment::eval(ScopeManager &scope){
 
 // Helper Functions
 NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope){
-    if(std::holds_alternative<void*>(info.data)){
-
-    }
-
     Data *data;
     switch(info.type){
     case NodeType::IDN:
@@ -801,7 +804,11 @@ NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope){
         break;
     }
 
-    if(std::holds_alternative<int32_t>(*data) || std::holds_alternative<float>(*data) || std::holds_alternative<void*>(*data)){
+    if(std::holds_alternative<void*>(*data)){
+        return NodeInfo(NodeType::PTR, *data);
+    }
+
+    if(std::holds_alternative<int32_t>(*data) || std::holds_alternative<float>(*data)){
         return NodeInfo(NodeType::NUM_LIT, *data);
     }
 
