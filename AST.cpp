@@ -346,27 +346,29 @@ NodeInfo BinaryExpression::eval(ScopeManager &scope){
         case OperatorType::OPR_OFF:
             if(rightNode.type == NodeType::NUM_LIT){
                 int index = static_cast<int>(variantAsNum(rightNode.data));
-                if(leftNode.type == NodeType::ABS_LST){
+                switch (leftNode.type)
+                {
+                case NodeType::PTR:
+                case NodeType::ABS_LST:
                     AbstractList* _data = static_cast<AbstractList*>(std::get<void*>(leftNode.data));
                     if(index < _data->getChildrens().size() && index >= 0){
                         leftNode = _data->getChildrens()[static_cast<int>(variantAsNum(rightNode.data))]->eval(scope);
                     }else{
                         throw ParserException("~Error~ Out of bounds exception");
                     }
-                }else if(leftNode.type == NodeType::STR_LIT){
-                    std::string _str = stripStr(std::get<std::string>(leftNode.data)); 
-                    if(index < _str.size() && index >= 0){
-                        leftNode.data =  '\"' + std::string(1, _str[index]) + '\"';
-                    }else{
-                        throw ParserException("~Error~ Out of bounds exception");
+                    break;
+                case NodeType::STR_LIT:
+                    {
+                        std::string _str = stripStr(std::get<std::string>(leftNode.data)); 
+                        if(index < _str.size() && index >= 0){
+                            leftNode.data =  '\"' + std::string(1, _str[index]) + '\"';
+                        }else{
+                            throw ParserException("~Error~ Out of bounds exception");
+                        }
                     }
-                }else if(leftNode.type == NodeType::PTR){
-                    AbstractList* _data = static_cast<AbstractList*>(std::get<void*>(leftNode.data));
-                    if(index < _data->getChildrens().size() && index >= 0){
-                        leftNode = _data->getChildrens()[static_cast<int>(variantAsNum(rightNode.data))]->eval(scope);
-                    }else{
-                        throw ParserException("~Error~ Out of bounds exception");
-                    }
+                    break;
+                default:
+                    break;
                 }
             }else{
                 throw ParserException("~Error~ Invalid Binary Operation \'" + variantAsStr(leftNode.data) + ' ' + m_value + ' ' + variantAsStr(rightNode.data) + "\' Incompatible Types.");
