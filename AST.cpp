@@ -162,8 +162,8 @@ ForStatement::ForStatement(){
 NodeInfo ForStatement::eval(ScopeManager &scope){
     if(!m_childrens[0]->getChildrens().empty()){
         scope.pushScope();
-        NodeInfo firstStatement = m_childrens[0]->getChildrens().at(0)->eval(scope);
-        NodeInfo secondStatement = m_childrens[0]->getChildrens().at(1)->eval(scope);
+        NodeInfo firstStatement = m_childrens[0]->getChild(0)->eval(scope);
+        NodeInfo secondStatement = m_childrens[0]->getChild(1)->eval(scope);
         NodeInfo thirdStatement;
         while(!isVariantEmptyOrNull(identifierToLiteral(secondStatement, scope).data)){
             NodeInfo _info = m_childrens[1]->eval(scope);
@@ -179,8 +179,8 @@ NodeInfo ForStatement::eval(ScopeManager &scope){
                 continue;
             }
 
-            thirdStatement = m_childrens[0]->getChildrens().at(2)->eval(scope);
-            secondStatement = m_childrens[0]->getChildrens().at(1)->eval(scope);
+            thirdStatement = m_childrens[0]->getChild(2)->eval(scope);
+            secondStatement = m_childrens[0]->getChild(1)->eval(scope);
         }
         scope.popScope();
     }
@@ -609,8 +609,8 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
     if(Data *data = scope.findData(identifier)){
         DefStatement *funDefPtr = reinterpret_cast<DefStatement*>(std::get<void*>(*data));
         std::vector<std::string> paramsList;
-        paramsList.reserve(funDefPtr->getChildrens().at(1)->getChildrens().size());
-        for(auto &e : funDefPtr->getChildrens().at(1)->getChildrens()){
+        paramsList.reserve(funDefPtr->getChild(1)->getChildrens().size());
+        for(auto &e : funDefPtr->getChild(1)->getChildrens()){
             paramsList.emplace_back(std::get<std::string>(e->eval(scope).data));
         }
 
@@ -620,7 +620,7 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                 scope.pushData(paramsList[i], argsList[i].data);
             }
 
-            NodeInfo _info = funDefPtr->getChildrens().at(2)->eval(scope);
+            NodeInfo _info = funDefPtr->getChild(2)->eval(scope);
             scope.isReturning = false;
             scope.popScope();
             return _info;
@@ -764,21 +764,12 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                         return invoke(scope, ptr, argsList);
                     }else if(ptr->info.type == NodeType::DEF_LAM_STM){
                         AbstractNode* ptr = reinterpret_cast<AbstractNode*>(std::get<void*>(argsList[0].data));
-                        scope.pushScope();
-                        NodeInfo _info = ptr->getChild(1)->eval(scope);
-                        scope.isReturning = false;
-                        scope.popScope();
-
-                        return _info;
+                        return invokeLambda(scope, ptr, argsList);
                     }
                 }else if(argsList[0].type == NodeType::DEF_LAM_STM){
                     AbstractNode* ptr = reinterpret_cast<AbstractNode*>(std::get<void*>(argsList[0].data));
-                    scope.pushScope();
-                    NodeInfo _info = ptr->getChild(1)->eval(scope);
-                    scope.isReturning = false;
-                    scope.popScope();
 
-                    return _info;
+                    return invokeLambda(scope, ptr, argsList);;
                 }else{
                     throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
                 }
@@ -910,8 +901,8 @@ NodeInfo invoke(ScopeManager &scope, std::string identifier, std::vector<NodeInf
     if(Data *data = scope.findData(identifier)){
         DefStatement *funDefPtr = reinterpret_cast<DefStatement*>(std::get<void*>(*data));
         std::vector<std::string> paramsList;
-        paramsList.reserve(funDefPtr->getChildrens().at(1)->getChildrens().size());
-        for(auto &e : funDefPtr->getChildrens().at(1)->getChildrens()){
+        paramsList.reserve(funDefPtr->getChild(1)->getChildrens().size());
+        for(auto &e : funDefPtr->getChild(1)->getChildrens()){
             paramsList.emplace_back(std::get<std::string>(e->eval(scope).data));
         }
 
@@ -921,7 +912,7 @@ NodeInfo invoke(ScopeManager &scope, std::string identifier, std::vector<NodeInf
                 scope.pushData(paramsList[i], argsList[i + 1].data);
             }
 
-            NodeInfo _info = funDefPtr->getChildrens().at(2)->eval(scope);
+            NodeInfo _info = funDefPtr->getChild(2)->eval(scope);
             scope.isReturning = false;
             scope.popScope();
             return _info;
@@ -938,8 +929,8 @@ NodeInfo invoke(ScopeManager &scope, AbstractNode* ptr, std::vector<NodeInfo> &a
     if(Data *data = scope.findData(identifier)){
         DefStatement *funDefPtr = reinterpret_cast<DefStatement*>(std::get<void*>(*data));
         std::vector<std::string> paramsList;
-        paramsList.reserve(funDefPtr->getChildrens().at(1)->getChildrens().size());
-        for(auto &e : funDefPtr->getChildrens().at(1)->getChildrens()){
+        paramsList.reserve(funDefPtr->getChild(1)->getChildrens().size());
+        for(auto &e : funDefPtr->getChild(1)->getChildrens()){
             paramsList.emplace_back(std::get<std::string>(e->eval(scope).data));
         }
 
@@ -949,7 +940,7 @@ NodeInfo invoke(ScopeManager &scope, AbstractNode* ptr, std::vector<NodeInfo> &a
                 scope.pushData(paramsList[i], argsList[i + 1].data);
             }
 
-            NodeInfo _info = funDefPtr->getChildrens().at(2)->eval(scope);
+            NodeInfo _info = funDefPtr->getChild(2)->eval(scope);
             scope.isReturning = false;
             scope.popScope();
             return _info;
@@ -959,4 +950,13 @@ NodeInfo invoke(ScopeManager &scope, AbstractNode* ptr, std::vector<NodeInfo> &a
     }else{
         throw ParserException("~Error~ Undefined Function Identifier \'" + identifier + "\'.");
     }
+}
+
+NodeInfo invokeLambda(ScopeManager &scope, AbstractNode* ptr, std::vector<NodeInfo> &argsList){
+    scope.pushScope();
+    NodeInfo _info = ptr->getChild(1)->eval(scope);
+    scope.isReturning = false;
+    scope.popScope();
+
+    return _info;
 }

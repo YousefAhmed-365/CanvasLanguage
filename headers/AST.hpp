@@ -209,5 +209,6 @@ struct AssignementStatment : public AbstractNode{
 NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope);
 NodeInfo invoke(ScopeManager &scope, std::string identifier, std::vector<NodeInfo> &argsList);
 NodeInfo invoke(ScopeManager &scope, AbstractNode *ptr, std::vector<NodeInfo> &argsList);
+NodeInfo invokeLambda(ScopeManager &scope, AbstractNode *ptr, std::vector<NodeInfo> &argsList);
 
 #endif
