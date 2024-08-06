@@ -350,11 +350,13 @@ NodeInfo BinaryExpression::eval(ScopeManager &scope){
                 {
                 case NodeType::PTR:
                 case NodeType::ABS_LST:
-                    AbstractList* _data = static_cast<AbstractList*>(std::get<void*>(leftNode.data));
-                    if(index < _data->getChildrens().size() && index >= 0){
-                        leftNode = _data->getChildrens()[static_cast<int>(variantAsNum(rightNode.data))]->eval(scope);
-                    }else{
-                        throw ParserException("~Error~ Out of bounds exception");
+                    {
+                        AbstractList* _data = static_cast<AbstractList*>(std::get<void*>(leftNode.data));
+                        if(index < _data->getChildrens().size() && index >= 0){
+                            leftNode = _data->getChildrens()[static_cast<int>(variantAsNum(rightNode.data))]->eval(scope);
+                        }else{
+                            throw ParserException("~Error~ Out of bounds exception");
+                        }
                     }
                     break;
                 case NodeType::STR_LIT:
