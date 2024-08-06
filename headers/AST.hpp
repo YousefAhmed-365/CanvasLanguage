@@ -23,6 +23,7 @@ enum class NodeType{
     FOR_STM,
     REP_STM,
     DEF_STM,
+    DEF_LAM_STM,
     RET_STM,
     CAL_STM,
     ASG_STM,
@@ -167,6 +168,13 @@ struct DefStatement : public AbstractNode{
     NodeInfo eval(ScopeManager &scope) override;
 };
 
+struct DefLambdaStatement : public AbstractNode{
+    DefLambdaStatement();
+    ~DefLambdaStatement() = default;
+
+    NodeInfo eval(ScopeManager &scope) override;
+};
+
 struct RetStatement : public AbstractNode{
     RetStatement(std::shared_ptr<AbstractNode> expression);
     ~RetStatement() = default;
@@ -200,5 +208,6 @@ struct AssignementStatment : public AbstractNode{
 // Helper Functions
 NodeInfo identifierToLiteral(NodeInfo info, ScopeManager &scope);
 NodeInfo invoke(ScopeManager &scope, std::string identifier, std::vector<NodeInfo> &argsList);
+NodeInfo invoke(ScopeManager &scope, AbstractNode *ptr, std::vector<NodeInfo> &argsList);
 
 #endif

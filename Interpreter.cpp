@@ -467,18 +467,28 @@ std::shared_ptr<AbstractNode> TreeParser::parseFactor(){
         break;
     case TokenType::IDN:
         {
-        std::string &nextTokenValue = nextToken()->value;
-        if(nextTokenValue == "("){
-            std::string &identifier = DelayedConsume(TokenType::IDN)->value;
-            result = std::make_shared<CallStatement>(identifier, parseTupleStatement());
-        }else if(nextTokenValue == "++" || nextTokenValue == "--"){
-            std::string &identifier = DelayedConsume(TokenType::IDN)->value;
-            std::string oprStr = DelayedConsume(TokenType::OPR)->value + "_DEL";
-            result = std::make_shared<UnaryExpression>(oprStr, std::make_shared<Identifier>(identifier));
-        }else{
-            result = std::make_shared<Identifier>(m_currToken->value);
-            consume();
+            std::string &nextTokenValue = nextToken()->value;
+            if(nextTokenValue == "("){
+                std::string &identifier = DelayedConsume(TokenType::IDN)->value;
+                result = std::make_shared<CallStatement>(identifier, parseTupleStatement());
+            }else if(nextTokenValue == "++" || nextTokenValue == "--"){
+                std::string &identifier = DelayedConsume(TokenType::IDN)->value;
+                std::string oprStr = DelayedConsume(TokenType::OPR)->value + "_DEL";
+                result = std::make_shared<UnaryExpression>(oprStr, std::make_shared<Identifier>(identifier));
+            }else{
+                result = std::make_shared<Identifier>(m_currToken->value);
+                consume();
+            }
         }
+        break;
+    case TokenType::KEY:
+        {
+            if(m_currToken->value == "def"){
+                consume(TokenType::KEY);
+                result = std::make_shared<DefLambdaStatement>();
+                result->attach(parseTupleStatement());
+                result->attach(parseBlockStatement(true));
+            }
         }
         break;
     

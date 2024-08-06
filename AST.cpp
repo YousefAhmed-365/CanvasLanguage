@@ -521,6 +521,7 @@ NodeInfo Identifier::eval(ScopeManager &scope){
 /* DefStatement Struct */
 DefStatement::DefStatement(){
     this->info.type = NodeType::DEF_STM;
+    this->info.data = this;
     this->m_value = "_DEF";
 }
 
@@ -528,8 +529,28 @@ NodeInfo DefStatement::eval(ScopeManager &scope){
     Data *data = scope.findData(std::get<std::string>(m_childrens[0]->eval(scope).data));
     if(data == nullptr){
         std::string identifier = std::get<std::string>(m_childrens[0]->eval(scope).data);
-        scope.pushData(identifier, Data(static_cast<void*>(&m_childrens)));
+        scope.pushData(identifier, Data(this));
     }
+
+    return this->info;
+}
+
+/* DefLambdaStatement Struct */
+DefLambdaStatement::DefLambdaStatement(){
+    this->info.type = NodeType::DEF_LAM_STM;
+    this->info.data = this;
+    this->m_value = "_DEF_LAMBDA";
+}
+
+NodeInfo DefLambdaStatement::eval(ScopeManager &scope){
+    // scope.pushScope();
+    // NodeInfo _info = m_childrens[1]->eval(scope);
+
+    // if(scope.isReturning){
+    //     scope.popScope();
+    //     return _info;
+    // }
+    // scope.popScope();
 
     return this->info;
 }
@@ -586,10 +607,10 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
     }
     
     if(Data *data = scope.findData(identifier)){
-        std::vector<std::shared_ptr<AbstractNode>> *funDefNodePtr = static_cast<std::vector<std::shared_ptr<AbstractNode>>*>(std::get<void*>(*data));
+        DefStatement *funDefPtr = reinterpret_cast<DefStatement*>(std::get<void*>(*data));
         std::vector<std::string> paramsList;
-        paramsList.reserve(funDefNodePtr->at(1)->getChildrens().size());
-        for(auto &e : funDefNodePtr->at(1)->getChildrens()){
+        paramsList.reserve(funDefPtr->getChildrens().at(1)->getChildrens().size());
+        for(auto &e : funDefPtr->getChildrens().at(1)->getChildrens()){
             paramsList.emplace_back(std::get<std::string>(e->eval(scope).data));
         }
 
@@ -599,7 +620,7 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                 scope.pushData(paramsList[i], argsList[i].data);
             }
 
-            NodeInfo _info = funDefNodePtr->at(2)->eval(scope);
+            NodeInfo _info = funDefPtr->getChildrens().at(2)->eval(scope);
             scope.isReturning = false;
             scope.popScope();
             return _info;
@@ -734,8 +755,33 @@ NodeInfo CallStatement::eval(ScopeManager &scope){
                 throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
             }
         }else if(identifier == "invoke"){
-            if(argsList.size() >= 1 && argsList[0].type == NodeType::STR_LIT){
-                return invoke(scope, stripStr(std::get<std::string>(argsList[0].data)), argsList);
+            if(argsList.size() >= 1){
+                if(argsList[0].type == NodeType::STR_LIT){
+                    return invoke(scope, stripStr(std::get<std::string>(argsList[0].data)), argsList);
+                }else if(argsList[0].type == NodeType::PTR){
+                    AbstractNode* ptr = reinterpret_cast<AbstractNode*>(std::get<void*>(argsList[0].data));
+                    if(ptr->info.type == NodeType::DEF_STM){
+                        return invoke(scope, ptr, argsList);
+                    }else if(ptr->info.type == NodeType::DEF_LAM_STM){
+                        AbstractNode* ptr = reinterpret_cast<AbstractNode*>(std::get<void*>(argsList[0].data));
+                        scope.pushScope();
+                        NodeInfo _info = ptr->getChild(1)->eval(scope);
+                        scope.isReturning = false;
+                        scope.popScope();
+
+                        return _info;
+                    }
+                }else if(argsList[0].type == NodeType::DEF_LAM_STM){
+                    AbstractNode* ptr = reinterpret_cast<AbstractNode*>(std::get<void*>(argsList[0].data));
+                    scope.pushScope();
+                    NodeInfo _info = ptr->getChild(1)->eval(scope);
+                    scope.isReturning = false;
+                    scope.popScope();
+
+                    return _info;
+                }else{
+                    throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
+                }
             }else{
                 throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
             }
@@ -862,10 +908,10 @@ NodeInfo invoke(ScopeManager &scope, std::string identifier, std::vector<NodeInf
     }
 
     if(Data *data = scope.findData(identifier)){
-        std::vector<std::shared_ptr<AbstractNode>> *funDefNodePtr = static_cast<std::vector<std::shared_ptr<AbstractNode>>*>(std::get<void*>(*data));
+        DefStatement *funDefPtr = reinterpret_cast<DefStatement*>(std::get<void*>(*data));
         std::vector<std::string> paramsList;
-        paramsList.reserve(funDefNodePtr->at(1)->getChildrens().size());
-        for(auto &e : funDefNodePtr->at(1)->getChildrens()){
+        paramsList.reserve(funDefPtr->getChildrens().at(1)->getChildrens().size());
+        for(auto &e : funDefPtr->getChildrens().at(1)->getChildrens()){
             paramsList.emplace_back(std::get<std::string>(e->eval(scope).data));
         }
 
@@ -875,7 +921,35 @@ NodeInfo invoke(ScopeManager &scope, std::string identifier, std::vector<NodeInf
                 scope.pushData(paramsList[i], argsList[i + 1].data);
             }
 
-            NodeInfo _info = funDefNodePtr->at(2)->eval(scope);
+            NodeInfo _info = funDefPtr->getChildrens().at(2)->eval(scope);
+            scope.isReturning = false;
+            scope.popScope();
+            return _info;
+        }else{
+            throw ParserException("~Error~ Invalid arguments for \'" + identifier + "\'.");
+        }
+    }else{
+        throw ParserException("~Error~ Undefined Function Identifier \'" + identifier + "\'.");
+    }
+}
+
+NodeInfo invoke(ScopeManager &scope, AbstractNode* ptr, std::vector<NodeInfo> &argsList){
+    std::string identifier = ptr->getChild(0)->getValue();
+    if(Data *data = scope.findData(identifier)){
+        DefStatement *funDefPtr = reinterpret_cast<DefStatement*>(std::get<void*>(*data));
+        std::vector<std::string> paramsList;
+        paramsList.reserve(funDefPtr->getChildrens().at(1)->getChildrens().size());
+        for(auto &e : funDefPtr->getChildrens().at(1)->getChildrens()){
+            paramsList.emplace_back(std::get<std::string>(e->eval(scope).data));
+        }
+
+        if(paramsList.size() == argsList.size() - 1){
+            scope.pushScope();
+            for(int i = 0; i < paramsList.size(); i++){
+                scope.pushData(paramsList[i], argsList[i + 1].data);
+            }
+
+            NodeInfo _info = funDefPtr->getChildrens().at(2)->eval(scope);
             scope.isReturning = false;
             scope.popScope();
             return _info;
