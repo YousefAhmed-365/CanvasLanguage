@@ -8,8 +8,10 @@ bool g_util::isKeyword(std::string &str){
         str == "else"   ||
         str == "while"  ||
         str == "for"    ||
+        str == "foreach"||
         str == "repeat" ||
         str == "def"    ||
+        str == "in"     ||
         str == "ret"    ||
         str == "break"  ||
         str == "continue"    

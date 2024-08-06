@@ -132,6 +132,13 @@ struct ForStatement : public AbstractNode{
     NodeInfo eval(ScopeManager &scope) override;
 };
 
+struct ForeachStatement : public AbstractNode{
+    ForeachStatement();
+    ~ForeachStatement() = default;
+
+    NodeInfo eval(ScopeManager &scope) override;
+};
+
 struct RepeatStatement : public AbstractNode{
     RepeatStatement(std::shared_ptr<AbstractNode> count);
     ~RepeatStatement() = default;

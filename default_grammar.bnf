@@ -15,6 +15,7 @@ assignment_statement	::= ID ASG_OPR (expression)
 if_statement			::= "if" "(" expression ")" block_statement ("elif" "(" expression ")" block_statement)* ("else" block_statement)?
 while_statement			::= "while" "(" expression ")" block_statement
 for_statement			::= "for" "(" statement "," statement "," statement ")" block_statement
+foreach					::= "foreach" "(" IDN "in" IDN ")" block_statement
 repeat_statement		::= "repeat" "(" expression ")" block_statement
 def_statement			::= "def" IDN tuple_statement block_statement
 call_statement			::= IDN tuple_statement
@@ -38,6 +39,6 @@ UNARY 					::= "!" | "-" | "++" | "--" | "new"
 COMPARISON 				::= "==" | ">=" | ">" | "<=" | "<" | "!="
 LOGICAL 				::= "&&" | "||"
 LIT  					::= STR | NUM
-ID 						::= [@A-Za-z_]+
+IDN 					::= [@A-Za-z_]+
 NUM_LIT 				::= [0-9]+
 STR_LIT					::= "\"" . "\""

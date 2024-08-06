@@ -274,6 +274,15 @@ std::shared_ptr<AbstractNode> TreeParser::parseStatement(){
         result->getChildrens().at(0)->attach(parseStatement());
         consume(")");
         result->attach(parseBlockStatement(true));
+    }else if(m_currToken->value == "foreach"){
+        consume(TokenType::KEY);
+        result = std::make_shared<ForeachStatement>();
+        consume("(");
+        result->attach(std::make_shared<Identifier>(DelayedConsume(TokenType::IDN)->value));
+        consume("in");
+        result->attach(std::make_shared<Identifier>(DelayedConsume(TokenType::IDN)->value));
+        consume(")");
+        result->attach(parseBlockStatement(true));
     }else if(m_currToken->value == "repeat"){
         consume(TokenType::KEY);
         consume("(");

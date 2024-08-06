@@ -188,6 +188,42 @@ NodeInfo ForStatement::eval(ScopeManager &scope){
     return this->info;
 }
 
+/* ForeachStatement Struct */
+ForeachStatement::ForeachStatement(){
+    this->info.type = NodeType::WHL_STM;
+    this->m_value = "_FOREACH";
+}
+
+NodeInfo ForeachStatement::eval(ScopeManager &scope){
+    if(Data *data = scope.findData(m_childrens[1]->getValue())){
+        if(std::holds_alternative<void*>(*data)){
+            AbstractList* listPtr = reinterpret_cast<AbstractList*>(std::get<void*>(*data));
+            scope.pushScope();
+            for(auto &e : listPtr->getChildrens()){
+                scope.pushData(m_childrens[0]->getValue(), e->eval(scope).data);
+
+                NodeInfo _info = m_childrens[2]->eval(scope);
+                if(scope.isReturning){
+                    scope.popScope();
+                    return _info;
+                }
+                
+                if(_info.type == NodeType::BRK_STM){
+                    scope.popScope();
+                    break;
+                }else if(_info.type == NodeType::CON_STM){
+                    continue;
+                }
+            }
+            scope.popScope();
+        }
+    }else{
+        throw ParserException("~Error~ Undefined Identifier \'" + m_childrens[1]->getValue() + "\'.");
+    }
+    
+    return this->info;
+}
+
 /* RepeatStatement Struct */
 RepeatStatement::RepeatStatement(std::shared_ptr<AbstractNode> count){
     this->info.type = NodeType::REP_STM;
