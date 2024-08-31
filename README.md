@@ -76,9 +76,9 @@
     }
 
     # Calling functions dynamically or statically
-    sum(3, 7)
+    sum(3, 7);
     # params: <function_name[string|identifier], args>
-    invoke(factorial, 6)
+    invoke(factorial, 6);
 
     # Lambda Function
     name = def(){
