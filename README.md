@@ -91,6 +91,7 @@
     def addFive(function){
         ret invoke(function) + 5;
     }
+    
     printf("Result: %s\n", addFive(def(){ret 4;}));
     ```
   - Basic Input & Output
