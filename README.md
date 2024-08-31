@@ -77,13 +77,14 @@
 
     # Calling functions dynamically or statically
     sum(3, 7)
+    # params: <function_name[string|identifier], args>
     invoke(factorial, 6)
 
     # Lambda Function
     name = def(){
       print("This is a lambda 1");
     };
-    
+
     invoke(name);
     invoke(def(){print("This is a lambda 2");});
     
@@ -106,6 +107,11 @@
     ```python
     error("Invalid Execution...");
     ```
+  - Basic Import System
+    ```python
+    # params: <file_name[string]>, <import_type[string]>
+    import("my_other_code.canvas", "CODE")
+    ```
 
 - **Graphical features** (Not Implemented Yet/Being reimplemented from old code):
   - Drawable objects (Canvas/Sprite)
@@ -120,12 +126,12 @@ All documentations and examples can be found in the `DOCS` Directory.
 Note: The language doesn't have an official syntax highlighting extension or a linter yet. 
 
 `hello_world.canvas`
-```C
+```python
 print("Hello, world!");
 ```
 
 `cat_club.canvas`
-``` C
+``` python
 def ask_YesNo(question){
     _inp = input(question + "? (Yes/No): ");
     while(_inp != "Yes" && _inp != "No"){
