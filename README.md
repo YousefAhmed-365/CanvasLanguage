@@ -39,9 +39,23 @@
     ```
   - Loops
     ```python
+    # While loop
     while(1){
       print("Infinity...");
     }
+
+    # Repeat loop
+    repeat(7){
+      print("Love me... Love me not...");
+    }
+
+    # Foreach loop
+    items = [7, 8, 9];
+    foreach(item in items){
+      print(item);
+    }
+
+    # For loop is supported but being reworked on as it's support is limited by the parser.
     ```
   - Mathematical, Assignement, and Logical Operators
     `+ - * / % ^`, `+= -= *= /= %= ^=`, `&& ||`
