@@ -21,14 +21,79 @@
 - **Core features**:
   - C-Style Syntax (Mostly)
   - Dynamic Types
+    ```python
+    string = "Example";
+    number = 18;
+    arr = ["Laptop", 7, 8, "Apple", "Banana"];
+    ```
   - Conditional Statements
+    ```python
+    score = 85;
+    if(score >= 90){
+      print("Excellent");
+    }elif(score >= 50){
+      print("Good");
+    }else{
+      print("Bad");
+    }
+    ```
   - Loops
-  - Logical/Assignement/Mathematical Operators
+    ```python
+    while(1){
+      print("Infinity...");
+    }
+    ```
+  - Mathematical, Assignement, and Logical Operators
+    `+ - * / % ^`, `+= -= *= /= %= ^=`, `&& ||`
   - User-Defined Functions & Variables
-  - Basic Input & Output
-  - Basic Type Conversion
+    ```python
+    # Normal function
+    def sum(x, y){
+      ret x + y;
+    }
 
-- **Graphical features** (Not Implemented Yet):
+    # Recursive Function
+    def factorial(num){
+      if(num <= 1){
+        ret num;
+      }
+
+      ret num + factorial(num - 1);
+    }
+
+    # Calling functions dynamically or statically
+    sum(3, 7)
+    invoke(factorial, 6)
+
+    # Lambda Function
+    name = def(){
+      print("This is a lambda 1");
+    };
+    
+    invoke(name);
+    invoke(def(){print("This is a lambda 2");});
+    
+    def addFive(function){
+        ret invoke(function) + 5;
+    }
+    printf("Result: %s\n", addFive(def(){ret 4;}));
+    ```
+  - Basic Input & Output
+    ```python
+    _inp = input("What's your name?: ");
+    printf("Your name is %s!\n", _inp);
+    ```
+  - Basic Type Conversion
+    ```python
+    to_str(3);
+    to_num("5")
+    ```
+  - Basic Error Handling
+    ```python
+    error("Invalid Execution...");
+    ```
+
+- **Graphical features** (Not Implemented Yet/Being reimplemented from old code):
   - Drawable objects (Canvas/Sprite)
   - Color support (rgb/rgba/hsl/hsla/hex)
   - Functional drawing (pixel/line/rec...etc.)
