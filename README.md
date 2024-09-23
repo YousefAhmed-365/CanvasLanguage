@@ -55,7 +55,7 @@
       print(item);
     }
 
-    # For loop is supported but being reworked on as it's support is limited by the parser.
+    # The for loop is being reworked on as its syntax is limited by the parser.
     ```
   - Mathematical, Assignement, and Logical Operators
     `+ - * / % ^`, `+= -= *= /= %= ^=`, `&& ||`
@@ -185,8 +185,8 @@ Open the terminal in the source directory and then use the following commands:
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=RELEASE
-# Use make instead of mingw32-make if you are on Linux.
-mingw32-make
+# Use mingw32-make if you are on Windows.
+make
 ```
 A new file will appear: **canvas**. Make sure to add it into your system PATH.
 
